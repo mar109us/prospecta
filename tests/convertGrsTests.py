@@ -3,7 +3,8 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "tools/convert"))
 
-from convertGrs import fill_missing_pixels, is_touching
+from convertGrs import fill_missing_pixels
+from neighbours import is_touching
 
 
 def make_pixel(min_lat, max_lat, min_lon, max_lon, value):

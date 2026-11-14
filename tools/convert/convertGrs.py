@@ -4,11 +4,14 @@ import numpy as np
 
 from download import download_file
 from grid import fill_pixel, make_empty_grid, save_grid_json
+from neighbours import find_neighbours, pixels_to_arrays
+from subdivide import subdivide
 
 PROJECT_ROOT = Path(__file__).resolve().parents[2]
 GRS_URL = "https://pds-geosciences.wustl.edu/lunar/lp-l-grs-5-elem-abundance-v1/lp_9001/data/lpgrs_high1_elem_abundance_2deg.tab"
 GRS_PATH = PROJECT_ROOT / "tools/convert/raw/lpgrs_high1_elem_abundance_2deg.tab"
 FIELD_COUNT = 61
+SUBDIVISION_LEVELS = 2
 
 IRON = {
     "name": "iron",
@@ -44,37 +47,11 @@ def read_pixels(path, column):
     return pixels
 
 
-def ranges_touch(min_a, max_a, min_b, max_b):
-    if max_a < min_b:
-        return False
-    if max_b < min_a:
-        return False
-    return True
-
-
-def lons_touch(pixel, other):
-    if ranges_touch(pixel["min_lon"], pixel["max_lon"], other["min_lon"], other["max_lon"]):
-        return True
-    if pixel["min_lon"] == -180 and other["max_lon"] == 180:
-        return True
-    if pixel["max_lon"] == 180 and other["min_lon"] == -180:
-        return True
-    return False
-
-
-def is_touching(pixel, other):
-    if not ranges_touch(pixel["min_lat"], pixel["max_lat"], other["min_lat"], other["max_lat"]):
-        return False
-    return lons_touch(pixel, other)
-
-
-def average_of_neighbours(pixel, pixels):
+def average_of_neighbours(pixel, pixels, arrays):
     known_values = []
-    for other in pixels:
-        if other is pixel or other["value"] is None:
-            continue
-        if is_touching(pixel, other):
-            known_values.append(other["value"])
+    for neighbour in find_neighbours(pixel, pixels, arrays):
+        if neighbour["value"] is not None:
+            known_values.append(neighbour["value"])
 
     if len(known_values) == 0:
         return None
@@ -82,11 +59,12 @@ def average_of_neighbours(pixel, pixels):
 
 
 def fill_missing_pixels(pixels):
+    arrays = pixels_to_arrays(pixels)
     estimates = []
     for pixel in pixels:
         if pixel["value"] is not None:
             continue
-        estimate = average_of_neighbours(pixel, pixels)
+        estimate = average_of_neighbours(pixel, pixels, arrays)
         estimates.append((pixel, estimate))
 
     for pixel, estimate in estimates:
@@ -107,6 +85,7 @@ def print_summary(grid, dataset):
 def convert_dataset(dataset):
     pixels = read_pixels(GRS_PATH, dataset["column"])
     fill_missing_pixels(pixels)
+    pixels = subdivide(pixels, SUBDIVISION_LEVELS)
     grid = make_empty_grid()
     for pixel in pixels:
         fill_pixel(grid, pixel)
