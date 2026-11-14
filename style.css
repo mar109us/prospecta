@@ -1,0 +1,18 @@
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  overflow: hidden;
+  background: black;
+}
+
+.globe {
+  width: 100vw;
+  height: 100vh;
+}
+
+.globe canvas {
+  display: block;
+}
