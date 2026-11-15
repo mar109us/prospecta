@@ -20,13 +20,10 @@
 
     <aside class="panel">
       <section class="panel__search">
-        <button type="button" id="search-button" class="panel__button">
-          Find areas
-        </button>
+        <button type="button" id="search-button" class="panel__button">Search</button>
         <p id="search-status" class="panel__status" aria-live="polite"></p>
       </section>
       <section id="resources-category" class="panel__category">
-        <h2 class="panel__heading">Resources</h2>
         <div id="resource-options" class="panel__options"></div>
         <button type="button" id="clear-resources" class="panel__clear">Clear all</button>
       </section>
@@ -34,29 +31,33 @@
     </aside>
 
     <aside class="panel panel--terrain">
-      <h2 class="panel__heading panel__heading--centred">Terrain</h2>
       <section id="terrain-category" class="panel__category">
         <div class="panel__row">
-          <div class="panel__item">
+          <div class="panel__layer">
+            <div id="flat-legend" class="legend"></div>
             <div class="panel__option">
               <input type="checkbox" id="flat-toggle" />
-              <label for="flat-toggle">Flat areas only</label>
+              <label for="flat-toggle">
+                <span class="panel__swatch"></span>
+                <span>Flat areas only</span>
+              </label>
             </div>
-            <div id="flat-legend" class="legend"></div>
           </div>
-          <div class="panel__item">
+          <div class="panel__layer">
+            <div id="slope-dots-legend" class="legend"></div>
             <div class="panel__option">
               <input type="checkbox" id="slope-dots-toggle" />
-              <label for="slope-dots-toggle">Slope (dots)</label>
+              <label for="slope-dots-toggle">
+                <span class="panel__swatch"></span>
+                <span>Slope</span>
+              </label>
             </div>
-            <div id="slope-dots-legend" class="legend"></div>
           </div>
         </div>
       </section>
     </aside>
 
     <aside id="search-results" class="results" hidden>
-      <h2 class="results__title">Suitable areas <br>(lower rank is better)</h2>
       <div id="search-result-cards" class="results__cards"></div>
     </aside>
   </body>

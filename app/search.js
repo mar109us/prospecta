@@ -96,7 +96,7 @@ function runSearch(search) {
   }
   return {
     spots: spots,
-    message: `Found ${spots.length} flat areas — see the list on the right.`,
+    message: "",
   };
 }
 

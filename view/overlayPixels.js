@@ -56,6 +56,33 @@ function rowHasData(grid, row) {
   return false;
 }
 
+export const NO_FADE_LIMIT_DEG = 1000;
+
+export function fadeLatLimit(grid, hasEdgeFade) {
+  if (!hasEdgeFade) return NO_FADE_LIMIT_DEG;
+  const latLimit = coverageLatLimit(grid);
+  if (latLimit >= 90) return NO_FADE_LIMIT_DEG;
+  return latLimit;
+}
+
+function rowEdgeNearestEquator(grid, row) {
+  const rowDeg = 180 / grid.height;
+  const topLat = 90 - row * rowDeg;
+  const bottomLat = topLat - rowDeg;
+  if (topLat > 0 && bottomLat < 0) return 0;
+  return Math.min(Math.abs(topLat), Math.abs(bottomLat));
+}
+
+export function fadeInLatLimit(grid) {
+  let innerLimit = 90;
+  for (let row = 0; row < grid.height; row++) {
+    if (!rowHasData(grid, row)) continue;
+    innerLimit = Math.min(innerLimit, rowEdgeNearestEquator(grid, row));
+  }
+  if (innerLimit <= 0) return -NO_FADE_LIMIT_DEG;
+  return innerLimit;
+}
+
 export function coverageLatLimit(grid) {
   const rowDeg = 180 / grid.height;
   let northRow = 0;

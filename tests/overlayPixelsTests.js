@@ -1,4 +1,12 @@
-import { buildLayerPixels, coverageLatLimit, fillChannel, valueToByte } from "../view/overlayPixels.js";
+import {
+  buildLayerPixels,
+  coverageLatLimit,
+  fadeInLatLimit,
+  fadeLatLimit,
+  fillChannel,
+  NO_FADE_LIMIT_DEG,
+  valueToByte,
+} from "../view/overlayPixels.js";
 
 function check(testName, isPassing) {
   if (isPassing) {
@@ -139,3 +147,25 @@ function testCoverageLimitOfAGlobalMap() {
 
 testCoverageLimitOfAPartialMap();
 testCoverageLimitOfAGlobalMap();
+
+function testLayerWithoutEdgeFadeGetsNoFadeLimit() {
+  check("a layer without edge fade gets no fade limit", fadeLatLimit(makeBandGrid(8, 27), false) === NO_FADE_LIMIT_DEG);
+}
+
+function testPartialLayerWithEdgeFadeFadesAtItsEdge() {
+  check("a partial layer with edge fade fades at its coverage edge", fadeLatLimit(makeBandGrid(8, 27), true) === 50);
+}
+
+testLayerWithoutEdgeFadeGetsNoFadeLimit();
+testPartialLayerWithEdgeFadeFadesAtItsEdge();
+
+function testPolarCapFadesInFromItsInnerEdge() {
+  check("a polar cap fades in from its inner edge", fadeInLatLimit(makeBandGrid(0, 1)) === 80);
+}
+
+function testMapAcrossTheEquatorHasNoFadeIn() {
+  check("a map across the equator has no fade-in", fadeInLatLimit(makeBandGrid(8, 27)) === -NO_FADE_LIMIT_DEG);
+}
+
+testPolarCapFadesInFromItsInnerEdge();
+testMapAcrossTheEquatorHasNoFadeIn();

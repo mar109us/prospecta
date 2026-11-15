@@ -26,7 +26,8 @@ body {
   left: 16px;
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: 32px;
+  width: 300px;
   padding: 12px 16px;
   color: white;
   font-family: system-ui, sans-serif;
@@ -34,50 +35,106 @@ body {
   border-radius: 8px;
 }
 
-.panel__category {
-  padding: 6px 8px;
-  border: 1px solid #555;
-  border-radius: 4px;
-}
-
 .panel--terrain {
   top: auto;
   bottom: 16px;
-}
-
-.panel__heading--centred {
-  text-align: center;
+  width: 480px;
 }
 
 .panel__row {
   display: flex;
-  align-items: center;
+  align-items: flex-end;
   gap: 24px;
 }
 
-.panel__item {
+.panel__row .panel__layer {
+  flex: 1;
+}
+
+.panel__layer {
   display: flex;
   flex-direction: column;
   gap: 4px;
 }
 
-.panel__heading {
-  margin: 0;
-  font-size: 16px;
-  font-weight: normal;
+.panel__layer:not(:has(input:checked)) .legend {
+  display: none;
 }
 
 .panel__options {
   display: flex;
   flex-direction: column;
   gap: 4px;
-  margin-top: 6px;
 }
 
 .panel__option {
+  position: relative;
+  display: flex;
+}
+
+.panel__option input {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: 0;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.panel__option label {
+  position: relative;
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 10px;
+  width: 100%;
+  min-height: 44px;
+  padding: 0 12px 0 16px;
+  overflow: hidden;
+  border-radius: 8px;
+  cursor: pointer;
+  user-select: none;
+}
+
+.panel__option label:hover {
+  background: rgba(255, 255, 255, 0.07);
+}
+
+.panel__option input:checked + label {
+  background: color-mix(in srgb, var(--layer-colour) 24%, transparent);
+}
+
+.panel__option input:checked + label:hover {
+  background:
+    linear-gradient(rgba(255, 255, 255, 0.07), rgba(255, 255, 255, 0.07)),
+    color-mix(in srgb, var(--layer-colour) 24%, transparent);
+}
+
+.panel__option input:checked + label::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  width: 3px;
+  background: var(--layer-colour);
+}
+
+.panel__option input:focus-visible + label {
+  outline: 2px solid white;
+  outline-offset: -2px;
+}
+
+.panel__swatch {
+  flex-shrink: 0;
+  width: 14px;
+  height: 14px;
+  border-radius: 3px;
+  background: var(--layer-colour);
+  opacity: 0.35;
+}
+
+.panel__option input:checked + label .panel__swatch {
+  opacity: 1;
 }
 
 .panel__error {
@@ -90,6 +147,7 @@ body {
   display: flex;
   flex-direction: column;
   gap: 6px;
+  margin-bottom: 8px;
   max-width: 300px;
 }
 
@@ -101,6 +159,10 @@ body {
   border: 1px solid #41ab5d;
   border-radius: 4px;
   cursor: pointer;
+}
+
+.panel__status:empty {
+  display: none;
 }
 
 .panel__status {
@@ -126,9 +188,8 @@ body {
   border-radius: 8px;
 }
 
-.results__title {
-  margin: 0;
-  font-size: 15px;
+.results[hidden] {
+  display: none;
 }
 
 .results__cards {
@@ -147,8 +208,8 @@ body {
   font: inherit;
   font-size: 13px;
   text-align: left;
-  background: rgba(255, 255, 255, 0.06);
-  border: 1px solid #555;
+  background: color-mix(in srgb, var(--rank-colour) 14%, transparent);
+  border: 1px solid color-mix(in srgb, var(--rank-colour) 45%, #555);
   border-radius: 6px;
   cursor: pointer;
 }
@@ -187,14 +248,19 @@ body {
 }
 
 .panel__divider {
-  height: 8px;
+  height: 4px;
 }
 
 .legend {
   display: flex;
   align-items: center;
   gap: 2px;
-  margin: 0 0 4px 24px;
+  margin: 0 0 4px 40px;
+  user-select: none;
+}
+
+.legend:empty {
+  display: none;
 }
 
 .legend__swatch {
@@ -239,11 +305,10 @@ body {
 
 .panel__clear {
   width: 100%;
-  margin-top: 6px;
-  padding: 2px 8px;
+  margin-top: 32px;
+  padding: 6px 10px;
   color: #ddd;
   font: inherit;
-  font-size: 12px;
   background: none;
   border: 1px solid #555;
   border-radius: 4px;

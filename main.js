@@ -13,7 +13,7 @@ import {
   connectClearButton,
   createToggle,
 } from "./view/layerToggles.js";
-import { buildResourceOptions } from "./view/resourcePanel.js";
+import { buildResourceOptions, colourToggleRow } from "./view/resourcePanel.js";
 import { drawFlatLegend, drawSlopeLegend } from "./view/legend.js";
 import { createResourceLayers, resourceToggles } from "./app/resourceLayers.js";
 import { connectLandingSearch } from "./app/search.js";
@@ -87,6 +87,8 @@ async function main() {
   }
 
   buildResourceOptions("resource-options", RESOURCE_LAYERS);
+  colourToggleRow(FLAT_LAYER.toggleId, SLOPE.flatColour);
+  colourToggleRow(SLOPE_DOTS_LAYER.toggleId, SLOPE.colours[SLOPE.colours.length - 1]);
   drawFlatLegend("flat-legend");
   drawSlopeLegend("slope-dots-legend");
 

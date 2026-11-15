@@ -3,7 +3,7 @@ import { Line2 } from "three/addons/lines/Line2.js";
 import { LineGeometry } from "three/addons/lines/LineGeometry.js";
 import { LineMaterial } from "three/addons/lines/LineMaterial.js";
 import { elevationToRadius, latLonToScenePosition, scenePositionToLatLon, surfaceElevation } from "./terrainMath.js";
-import { isOnNearSide } from "./markers.js";
+import { isOnNearSide, MARKER_SIZE } from "./markers.js";
 import { stackBoxes } from "./labelStack.js";
 import { formatValue, layerLabel, shortUnit } from "./text.js";
 import { ROUTES } from "../settings.js";
@@ -80,6 +80,7 @@ function clearRoutes(routeGroups) {
   }
   routeGroups.labelLayer.textContent = "";
   routeGroups.labels = [];
+  routeGroups.markerAnchor = null;
 }
 
 export function createRouteGroups(globe) {
@@ -94,11 +95,13 @@ export function createRouteGroups(globe) {
     lines: lines,
     labelLayer: labelLayer,
     labels: [],
+    markerAnchor: null,
   };
 }
 
 export function showRoutes(routeGroups, spot, layers, elevation, exaggeration) {
   clearRoutes(routeGroups);
+  routeGroups.markerAnchor = groundPoint(spot.lat, spot.lon, elevation, exaggeration);
 
   for (const route of spot.routes) {
     const colour = colourFor(layers, route.name);
@@ -116,11 +119,26 @@ export function showRoutes(routeGroups, spot, layers, elevation, exaggeration) {
   }
 }
 
+function markerBox(anchor, camera, width, height) {
+  const screen = anchor.clone().project(camera);
+  const distance = anchor.distanceTo(camera.position);
+  const viewHeight = 2 * distance * Math.tan(THREE.MathUtils.degToRad(camera.fov / 2));
+  const sizePx = (MARKER_SIZE / viewHeight) * height;
+  return {
+    x: ((screen.x + 1) / 2) * width - sizePx / 2,
+    y: ((1 - screen.y) / 2) * height - sizePx / 2,
+    width: sizePx,
+    height: sizePx,
+  };
+}
+
 export function updateRoutes(routeGroups, camera) {
   camera.updateMatrixWorld();
   const width = window.innerWidth;
   const height = window.innerHeight;
   const boxes = [];
+  const anchor = routeGroups.markerAnchor;
+  if (anchor && isOnNearSide(anchor, camera)) boxes.push(markerBox(anchor, camera, width, height));
   for (const label of routeGroups.labels) {
     label.element.hidden = !isOnNearSide(label.anchor, camera);
     if (label.element.hidden) continue;
@@ -137,6 +155,7 @@ export function updateRoutes(routeGroups, camera) {
 
   stackBoxes(boxes, ROUTES.labelStackGapPx);
   for (const box of boxes) {
+    if (!box.element) continue;
     box.element.style.transform = `translate(${box.x}px, ${box.y}px)`;
   }
 }

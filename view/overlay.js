@@ -1,12 +1,11 @@
 import * as THREE from "three";
-import { coverageLatLimit, fillChannel, MAX_LAYERS } from "./overlayPixels.js";
+import { fadeInLatLimit, fadeLatLimit, fillChannel, MAX_LAYERS, NO_FADE_LIMIT_DEG } from "./overlayPixels.js";
 import { applyLayerShader } from "./layerShader.js";
 import { curvePower, noiseRatio } from "./layerBands.js";
 import { RESOURCE_BANDS, RESOURCES } from "../settings.js";
 
 const GRID_WIDTH = 720;
 const GRID_HEIGHT = 360;
-const NO_FADE_LIMIT_DEG = 1000;
 
 
 function createLayerTexture(pixels) {
@@ -52,6 +51,9 @@ function createLayerUniforms(layers) {
     },
     layerLatLimits: {
       value: new THREE.Vector4(90, 90, 90, 90),
+    },
+    layerInnerLatLimits: {
+      value: new THREE.Vector4(-NO_FADE_LIMIT_DEG, -NO_FADE_LIMIT_DEG, -NO_FADE_LIMIT_DEG, -NO_FADE_LIMIT_DEG),
     },
     edgeFadeDeg: {
       value: RESOURCES.edgeFadeDeg,
@@ -109,7 +111,7 @@ export function setLayerVisible(overlay, index, isVisible) {
   chunk.uniforms.layerVisible.value.setComponent(index % MAX_LAYERS, visibility);
 }
 
-export function addLayerGrid(overlay, index, grid) {
+export function addLayerGrid(overlay, index, grid, hasEdgeFade) {
   if (grid.width !== GRID_WIDTH || grid.height !== GRID_HEIGHT) {
     throw new Error(`Dataset "${grid.name}" is ${grid.width}x${grid.height}, but layers must be ${GRID_WIDTH}x${GRID_HEIGHT}.`);
   }
@@ -118,7 +120,6 @@ export function addLayerGrid(overlay, index, grid) {
   fillChannel(chunk.pixels, grid, channel);
   chunk.texture.needsUpdate = true;
   chunk.uniforms.layerCurvePowers.value.setComponent(channel, curvePower(noiseRatio(grid)));
-  let latLimit = coverageLatLimit(grid);
-  if (latLimit >= 90) latLimit = NO_FADE_LIMIT_DEG;
-  chunk.uniforms.layerLatLimits.value.setComponent(channel, latLimit);
+  chunk.uniforms.layerLatLimits.value.setComponent(channel, fadeLatLimit(grid, hasEdgeFade));
+  chunk.uniforms.layerInnerLatLimits.value.setComponent(channel, fadeInLatLimit(grid));
 }

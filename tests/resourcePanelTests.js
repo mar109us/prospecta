@@ -8,12 +8,13 @@ function check(testName, isPassing) {
   console.error(`FAIL ${testName}`);
 }
 
-function makeLayer(datasetName, isMineral) {
+function makeLayer(datasetName, section) {
   return {
     datasetName: datasetName,
     label: datasetName,
+    colour: "#123456",
     toggleId: `${datasetName}-test-toggle`,
-    isMineral: isMineral,
+    section: section,
   };
 }
 
@@ -27,9 +28,19 @@ function buildTestPanel() {
     label: "polarTest",
     partOf: "hydrogenTest",
   };
-  const layers = [makeLayer("olivineTest", true), makeLayer("ironTest", false), makeLayer("hydrogenTest", false), polar];
+  const layers = [
+    makeLayer("ironTest", 1),
+    makeLayer("hydrogenTest", 1),
+    polar,
+    makeLayer("thoriumTest", 2),
+    makeLayer("olivineTest", 3),
+  ];
   buildResourceOptions(container.id, layers);
   return container;
+}
+
+function blockOf(toggleId) {
+  return document.getElementById(toggleId).parentElement.parentElement;
 }
 
 function indexInPanel(container, element) {
@@ -41,23 +52,23 @@ function indexInPanel(container, element) {
 
 function testLayersSitInOneFlatList() {
   const container = buildTestPanel();
-  const iron = document.getElementById("ironTest-test-toggle");
-  const olivine = document.getElementById("olivineTest-test-toggle");
   let isFlat = false;
-  if (iron.parentElement.parentElement === container && olivine.parentElement.parentElement === container) isFlat = true;
+  if (blockOf("ironTest-test-toggle").parentElement === container && blockOf("olivineTest-test-toggle").parentElement === container) isFlat = true;
   check("all layers sit in one flat list", isFlat && container.getElementsByTagName("details").length === 0);
   container.remove();
 }
 
-function testMineralsComeAfterTheDivider() {
+function testSectionsAreSeparatedByDividers() {
   const container = buildTestPanel();
   const dividers = container.getElementsByClassName("panel__divider");
-  const dividerIndex = indexInPanel(container, dividers[0]);
-  const ironIndex = indexInPanel(container, document.getElementById("ironTest-test-toggle").parentElement);
-  const olivineIndex = indexInPanel(container, document.getElementById("olivineTest-test-toggle").parentElement);
+  const firstDivider = indexInPanel(container, dividers[0]);
+  const secondDivider = indexInPanel(container, dividers[1]);
+  const hydrogenIndex = indexInPanel(container, blockOf("hydrogenTest-test-toggle"));
+  const thoriumIndex = indexInPanel(container, blockOf("thoriumTest-test-toggle"));
+  const olivineIndex = indexInPanel(container, blockOf("olivineTest-test-toggle"));
   let isInOrder = false;
-  if (ironIndex < dividerIndex && dividerIndex < olivineIndex) isInOrder = true;
-  check("minerals come after the divider", dividers.length === 1 && isInOrder);
+  if (hydrogenIndex < firstDivider && firstDivider < thoriumIndex && thoriumIndex < secondDivider && secondDivider < olivineIndex) isInOrder = true;
+  check("sections are separated by dividers", dividers.length === 2 && isInOrder);
   container.remove();
 }
 
@@ -71,11 +82,39 @@ function testPartLayerGetsLegendButNoCheckbox() {
   const container = buildTestPanel();
   const legend = document.getElementById("polarTest-legend");
   const checkbox = document.getElementById("polarTest-test-toggle");
-  check("a part layer gets a legend row but no checkbox", legend !== null && checkbox === null);
+  let isInHydrogenBlock = false;
+  if (legend && legend.parentElement === blockOf("hydrogenTest-test-toggle")) isInHydrogenBlock = true;
+  check("a part layer gets a legend row in its parent's block but no checkbox", isInHydrogenBlock && checkbox === null);
+  container.remove();
+}
+
+function testRowsCarryTheLayerColour() {
+  const container = buildTestPanel();
+  const option = document.getElementById("ironTest-test-toggle").parentElement;
+  check("rows carry the layer colour", option.style.getPropertyValue("--layer-colour") === "#123456");
+  container.remove();
+}
+
+function testLoadingLabelKeepsTheSwatch() {
+  const container = buildTestPanel();
+  const text = document.getElementById("ironTest-label");
+  text.textContent = "ironTest (loading…)";
+  const label = text.parentElement;
+  check("the loading label keeps the swatch", label.getElementsByClassName("panel__swatch").length === 1);
+  container.remove();
+}
+
+function testCheckboxIsStillARealInput() {
+  const container = buildTestPanel();
+  const checkbox = document.getElementById("ironTest-test-toggle");
+  check("the checkbox is still a real input", checkbox.tagName === "INPUT" && checkbox.type === "checkbox");
   container.remove();
 }
 
 testLayersSitInOneFlatList();
-testMineralsComeAfterTheDivider();
+testSectionsAreSeparatedByDividers();
 testNoGroupHeadings();
 testPartLayerGetsLegendButNoCheckbox();
+testRowsCarryTheLayerColour();
+testLoadingLabelKeepsTheSwatch();
+testCheckboxIsStillARealInput();

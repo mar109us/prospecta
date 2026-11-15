@@ -1,7 +1,7 @@
 import * as THREE from "three";
 import { elevationAt, elevationToRadius, latLonToScenePosition } from "./terrainMath.js";
 
-const MARKER_SIZE = 0.035;
+export const MARKER_SIZE = 0.035;
 const MARKER_LIFT = 0.01;
 const LABEL_PIXELS = 64;
 

@@ -10,12 +10,14 @@ PROJECT_ROOT = Path(__file__).resolve().parents[2]
 HYDROGEN_URL = "https://pds-geosciences.wustl.edu/missions/lunarp/reduced/hydrogenhd.dat"
 HYDROGEN_PATH = PROJECT_ROOT / "tools/convert/raw/hydrogenhd.dat"
 VALUE_DIVISOR = 10
+ICE_BAND_START_DEG = 70
 LEND_COVERAGE_START_DEG = 80
+CROSS_FADE_DEG = 3
 
 HYDROGEN = {
     "name": "hydrogen",
     "unit": "H ppm",
-    "source": "Lunar Prospector Neutron Spectrometer, Feldman et al. 2001 (0.5 degree bins); cut poleward of 80 degrees, where LEND takes over",
+    "source": "Lunar Prospector Neutron Spectrometer, Feldman et al. 2001 (0.5 degree bins); kept only between 70 and 80 degrees: closer to the equator it is solar-wind hydrogen, not ice, and LEND takes over beyond 80 (both run to 83 so the app can cross-fade them)",
     "output_path": PROJECT_ROOT / "datasets/hydrogen.json",
 }
 
@@ -28,15 +30,18 @@ def read_hydrogen(path):
     return south_first[::-1]
 
 
-def cut_poles(grid, limit_deg):
-    cut = grid.copy()
-    cut[np.abs(CENTRE_LATS) > limit_deg] = np.nan
-    return cut
+def keep_latitude_band(grid, min_lat_deg, max_lat_deg):
+    kept = grid.copy()
+    absolute_lats = np.abs(CENTRE_LATS)
+    kept[absolute_lats < min_lat_deg] = np.nan
+    kept[absolute_lats > max_lat_deg] = np.nan
+    return kept
 
 
 def main():
     download_file(HYDROGEN_URL, HYDROGEN_PATH)
-    grid = cut_poles(read_hydrogen(HYDROGEN_PATH), LEND_COVERAGE_START_DEG)
+    band_end_deg = LEND_COVERAGE_START_DEG + CROSS_FADE_DEG
+    grid = keep_latitude_band(read_hydrogen(HYDROGEN_PATH), ICE_BAND_START_DEG, band_end_deg)
     save_grid_json(grid, HYDROGEN, HYDROGEN["output_path"])
     print_summary(grid, HYDROGEN)
 

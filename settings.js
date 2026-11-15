@@ -37,15 +37,17 @@ export const RESOURCES = {
     {
       datasetName: "iron",
       label: "Iron (FeO)",
+      section: 1,
       colour: "#B7410E",
       toggleId: "iron-toggle",
       category: "resources",
       isFill: true,
-      isOnByDefault: true,
+      isOnByDefault: false,
     },
     {
       datasetName: "titanium",
       label: "Titanium (TiO₂)",
+      section: 1,
       note: "LROC WAC TiO₂ map (Sato et al. 2017), ±70° latitude.",
       colour: "#E0B000",
       toggleId: "titanium-toggle",
@@ -56,6 +58,7 @@ export const RESOURCES = {
     {
       datasetName: "aluminium",
       label: "Aluminium (Al₂O₃)",
+      section: 1,
       colour: "#7E57C2",
       toggleId: "aluminium-toggle",
       category: "resources",
@@ -65,18 +68,20 @@ export const RESOURCES = {
     {
       datasetName: "silicon",
       label: "Silicon (SiO₂)",
+      section: 1,
       colour: "#2F7FD8",
       toggleId: "silicon-toggle",
       category: "resources",
       isFill: true,
-      isOnByDefault: true,
+      isOnByDefault: false,
     },
     {
       datasetName: "hydrogen",
       label: "Water ice (H)",
-      note: "Measured as hydrogen, which indicates likely water ice. Global: Lunar Prospector (ppm). Poles beyond 80°: LRO LEND (neutron suppression %).",
-      legendPrefix: "Global:",
-      colour: "#E1F5FE",
+      section: 1,
+      note: "Measured as hydrogen, which indicates likely water ice. 70–80°: Lunar Prospector (ppm). Beyond 80°: LRO LEND (neutron suppression %).",
+      legendPrefix: "70–80°:",
+      colour: "#4FC3F7",
       toggleId: "hydrogen-toggle",
       category: "resources",
       isFill: true,
@@ -85,13 +90,14 @@ export const RESOURCES = {
     {
       datasetName: "polarHydrogen",
       label: "Water ice (H), poles",
-      legendPrefix: "Poles:",
-      colour: "#81D4FA",
+      legendPrefix: "80–90°:",
+      colour: "#4FC3F7",
       partOf: "hydrogen",
     },
     {
       datasetName: "thorium",
       label: "Thorium (Th)",
+      section: 2,
       colour: "#26C6DA",
       toggleId: "thorium-toggle",
       category: "resources",
@@ -101,6 +107,7 @@ export const RESOURCES = {
     {
       datasetName: "magnesium",
       label: "Magnesium (MgO)",
+      section: 2,
       colour: "#179C8E",
       toggleId: "magnesium-toggle",
       category: "resources",
@@ -110,6 +117,7 @@ export const RESOURCES = {
     {
       datasetName: "calcium",
       label: "Calcium (CaO)",
+      section: 2,
       colour: "#C0CA33",
       toggleId: "calcium-toggle",
       category: "resources",
@@ -119,6 +127,7 @@ export const RESOURCES = {
     {
       datasetName: "potassium",
       label: "Potassium (K)",
+      section: 2,
       colour: "#FF8A65",
       toggleId: "potassium-toggle",
       category: "resources",
@@ -128,39 +137,39 @@ export const RESOURCES = {
     {
       datasetName: "olivine",
       label: "Olivine",
+      section: 3,
       colour: "#7CB342",
       toggleId: "olivine-toggle",
       category: "resources",
       isFill: true,
       isOnByDefault: false,
-      isMineral: true,
     },
     {
       datasetName: "pyroxene",
       label: "Pyroxene",
+      section: 3,
       note: "Low-Ca + high-Ca pyroxene, Kaguya MI (Lemelin et al. 2016).",
       colour: "#A1887F",
       toggleId: "pyroxene-toggle",
       category: "resources",
       isFill: true,
       isOnByDefault: false,
-      isMineral: true,
     },
     {
       datasetName: "plagioclase",
       label: "Plagioclase",
+      section: 3,
       colour: "#ECEFF1",
       toggleId: "plagioclase-toggle",
       category: "resources",
       isFill: true,
       isOnByDefault: false,
-      isMineral: true,
     },
   ],
 };
 
 export const RESOURCE_BANDS = {
-  bandCount: 5,
+  bandCount: 8,
   baseCurvePower: 2,
   maxNoiseRatio: 0.95,
   errorsPerBand: 2,
@@ -211,6 +220,13 @@ export const ROUTES = {
   liftAboveGround: 0.002,
   curvePointsPerStep: 6,
   labelStackGapPx: 2,
+};
+
+export const RESULTS = {
+  bestHue: 120,
+  worstHue: 0,
+  saturationPercent: 70,
+  lightnessPercent: 50,
 };
 
 export const FOCUS = {

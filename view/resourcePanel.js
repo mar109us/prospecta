@@ -1,18 +1,32 @@
 import { partIndices } from "../data/layerParts.js";
 
+function createSwatch() {
+  const swatch = document.createElement("span");
+  swatch.className = "panel__swatch";
+  return swatch;
+}
+
+function createLabelText(layer) {
+  const text = document.createElement("span");
+  text.id = `${layer.datasetName}-label`;
+  text.textContent = layer.label;
+  return text;
+}
+
 function createOption(layer) {
   const option = document.createElement("div");
   option.className = "panel__option";
+  option.style.setProperty("--layer-colour", layer.colour);
 
   const checkbox = document.createElement("input");
   checkbox.type = "checkbox";
   checkbox.id = layer.toggleId;
 
   const label = document.createElement("label");
-  label.id = `${layer.datasetName}-label`;
   label.htmlFor = layer.toggleId;
-  label.textContent = layer.label;
   if (layer.note) label.title = layer.note;
+  label.appendChild(createSwatch());
+  label.appendChild(createLabelText(layer));
 
   option.appendChild(checkbox);
   option.appendChild(label);
@@ -26,12 +40,15 @@ function createLegendSlot(layer) {
   return legend;
 }
 
-function appendLayer(container, layers, layer) {
-  container.appendChild(createOption(layer));
-  container.appendChild(createLegendSlot(layer));
+function createLayerBlock(layers, layer) {
+  const block = document.createElement("div");
+  block.className = "panel__layer";
+  block.appendChild(createOption(layer));
+  block.appendChild(createLegendSlot(layer));
   for (const partIndex of partIndices(layers, layer.datasetName)) {
-    container.appendChild(createLegendSlot(layers[partIndex]));
+    block.appendChild(createLegendSlot(layers[partIndex]));
   }
+  return block;
 }
 
 function createDivider() {
@@ -47,15 +64,20 @@ export function buildResourceOptions(containerId, layers) {
     return;
   }
 
+  let previousSection = null;
   for (const layer of layers) {
     if (layer.partOf) continue;
-    if (layer.isMineral) continue;
-    appendLayer(container, layers, layer);
+    if (previousSection !== null && layer.section !== previousSection) container.appendChild(createDivider());
+    previousSection = layer.section;
+    container.appendChild(createLayerBlock(layers, layer));
   }
-  container.appendChild(createDivider());
-  for (const layer of layers) {
-    if (layer.partOf) continue;
-    if (!layer.isMineral) continue;
-    appendLayer(container, layers, layer);
+}
+
+export function colourToggleRow(toggleId, colour) {
+  const checkbox = document.getElementById(toggleId);
+  if (!checkbox) {
+    console.error(`Cannot colour toggle row: no element with id "${toggleId}".`);
+    return;
   }
+  checkbox.parentElement.style.setProperty("--layer-colour", colour);
 }

@@ -21,7 +21,9 @@ async function loadLayer(state, index) {
   setLoadingLabel(layer, true);
   try {
     const grid = await loadDataset(layer.datasetName);
-    addLayerGrid(state.overlay, index, grid);
+    let hasEdgeFade = true;
+    if (layer.hasEdgeFade === false) hasEdgeFade = false;
+    addLayerGrid(state.overlay, index, grid, hasEdgeFade);
     drawResourceLegend(layer, grid);
     state.loaded.resourceGrids[index] = grid;
     if (DEBUG.isEnabled) connectLayerDebug(layer, grid);

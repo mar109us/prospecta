@@ -1,5 +1,5 @@
 import { layerLabel } from "./text.js";
-import { LANDING } from "../settings.js";
+import { LANDING, RESULTS } from "../settings.js";
 
 const PAINT_DELAY_MS = 20;
 
@@ -18,10 +18,21 @@ function createLine(className, text) {
   return line;
 }
 
-function createCard(spot, onSelect) {
+export function rankHue(rank, count) {
+  if (count <= 1) return RESULTS.bestHue;
+  const share = (rank - 1) / (count - 1);
+  return RESULTS.bestHue + (RESULTS.worstHue - RESULTS.bestHue) * share;
+}
+
+function rankColour(rank, count) {
+  return `hsl(${rankHue(rank, count)}, ${RESULTS.saturationPercent}%, ${RESULTS.lightnessPercent}%)`;
+}
+
+function createCard(spot, count, onSelect) {
   const card = document.createElement("button");
   card.type = "button";
   card.className = "result-card";
+  card.style.setProperty("--rank-colour", rankColour(spot.rank, count));
   card.appendChild(createLine("result-card__badge", `${spot.rank}`));
 
   card.appendChild(createLine("result-card__place", formatLatLon(spot.lat, spot.lon)));
@@ -47,7 +58,7 @@ function renderResults(spots, onSelect) {
   cards.textContent = "";
 
   for (const spot of spots) {
-    cards.appendChild(createCard(spot, onSelect));
+    cards.appendChild(createCard(spot, spots.length, onSelect));
   }
 
   if (spots.length === 0) {
