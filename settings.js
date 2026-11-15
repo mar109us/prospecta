@@ -210,6 +210,7 @@ export const ROUTES = {
   lineWidthPx: 10,
   liftAboveGround: 0.002,
   curvePointsPerStep: 6,
+  labelStackGapPx: 2,
 };
 
 export const FOCUS = {

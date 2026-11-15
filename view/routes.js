@@ -4,6 +4,7 @@ import { LineGeometry } from "three/addons/lines/LineGeometry.js";
 import { LineMaterial } from "three/addons/lines/LineMaterial.js";
 import { elevationToRadius, latLonToScenePosition, scenePositionToLatLon, surfaceElevation } from "./terrainMath.js";
 import { isOnNearSide } from "./markers.js";
+import { stackBoxes } from "./labelStack.js";
 import { formatValue, layerLabel, shortUnit } from "./text.js";
 import { ROUTES } from "../settings.js";
 
@@ -119,13 +120,23 @@ export function updateRoutes(routeGroups, camera) {
   camera.updateMatrixWorld();
   const width = window.innerWidth;
   const height = window.innerHeight;
+  const boxes = [];
   for (const label of routeGroups.labels) {
     label.element.hidden = !isOnNearSide(label.anchor, camera);
     if (label.element.hidden) continue;
 
     const screen = label.anchor.clone().project(camera);
-    const x = ((screen.x + 1) / 2) * width;
-    const y = ((1 - screen.y) / 2) * height;
-    label.element.style.transform = `translate(${x}px, ${y}px)`;
+    boxes.push({
+      element: label.element,
+      x: ((screen.x + 1) / 2) * width,
+      y: ((1 - screen.y) / 2) * height,
+      width: label.element.offsetWidth,
+      height: label.element.offsetHeight,
+    });
+  }
+
+  stackBoxes(boxes, ROUTES.labelStackGapPx);
+  for (const box of boxes) {
+    box.element.style.transform = `translate(${box.x}px, ${box.y}px)`;
   }
 }

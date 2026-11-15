@@ -1,6 +1,7 @@
 import { createMinHeap, isHeapEmpty, popSmallest, pushItem } from "../data/minHeap.js";
 import { distanceKm, toUnitVector } from "../data/geo.js";
 import { buildRouteGrid, computeCostField, nodeIndexAt, tracePath } from "../data/routes.js";
+import { isOverlapping, stackBoxes } from "../view/labelStack.js";
 
 function check(testName, isPassing) {
   if (isPassing) {
@@ -91,8 +92,33 @@ function testPathEndsAtTheDeposit() {
   check("path ends at the deposit", end.lat === 2.5 && end.lon === 2.5);
 }
 
+function makeBox(x, y) {
+  return {
+    x: x,
+    y: y,
+    width: 100,
+    height: 20,
+  };
+}
+
+function testOverlappingLabelsStackBelowEachOther() {
+  const boxes = [makeBox(10, 10), makeBox(15, 12), makeBox(12, 8)];
+  stackBoxes(boxes, 2);
+  let isStacked = false;
+  if (boxes[1].y === 32 && boxes[2].y === 54) isStacked = true;
+  check("overlapping labels stack below each other", isStacked);
+}
+
+function testSeparateLabelsStayPut() {
+  const boxes = [makeBox(10, 10), makeBox(300, 10)];
+  stackBoxes(boxes, 2);
+  check("separate labels stay where they are", boxes[1].y === 10 && !isOverlapping(boxes[0], boxes[1]));
+}
+
 testHeapPopsInOrder();
 testFlatRouteIsCloseToStraightLine();
 testSteepWallForcesADetour();
 testDepositOnSteepGroundIsUnreachable();
 testPathEndsAtTheDeposit();
+testOverlappingLabelsStackBelowEachOther();
+testSeparateLabelsStayPut();
