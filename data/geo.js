@@ -30,6 +30,12 @@ export function distanceKm(a, b) {
   return dotToKm(dot(a, b));
 }
 
+export function valueAt(grid, lat, lon) {
+  const row = Math.min(Math.floor(((90 - lat) / 180) * grid.height), grid.height - 1);
+  const column = Math.floor(((lon + 180) / 360) * grid.width) % grid.width;
+  return grid.values[row * grid.width + column];
+}
+
 export function cellSizeKm(grid) {
   return (Math.PI * MOON_RADIUS_KM) / grid.height;
 }

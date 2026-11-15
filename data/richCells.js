@@ -1,4 +1,4 @@
-import { cellCentre, toUnitVector } from "./geo.js";
+import { cellCentre } from "./geo.js";
 
 export function richThreshold(values, topFraction) {
   const known = [];
@@ -35,8 +35,7 @@ export function findRichCells(grid, topFraction, stepDeg) {
     for (let column = 0; column < grid.width; column += step) {
       const cell = firstRichCellInBlock(grid, row, column, step, threshold);
       if (!cell) continue;
-      const centre = cellCentre(grid, cell.row, cell.column);
-      richCells.push(toUnitVector(centre.lat, centre.lon));
+      richCells.push(cellCentre(grid, cell.row, cell.column));
     }
   }
   return richCells;

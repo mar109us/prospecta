@@ -1,3 +1,5 @@
+import { capitalise } from "./text.js";
+
 const PAINT_DELAY_MS = 20;
 
 function formatLatLon(lat, lon) {
@@ -6,10 +8,6 @@ function formatLatLon(lat, lon) {
   let eastWest = "E";
   if (lon < 0) eastWest = "W";
   return `${Math.abs(lat).toFixed(1)}°${northSouth} ${Math.abs(lon).toFixed(1)}°${eastWest}`;
-}
-
-function capitalise(word) {
-  return `${word.charAt(0).toUpperCase()}${word.slice(1)}`;
 }
 
 function createLine(className, text) {
@@ -26,8 +24,8 @@ function createCard(spot, onSelect) {
   card.appendChild(createLine("result-card__badge", `${spot.rank}`));
 
   card.appendChild(createLine("result-card__place", formatLatLon(spot.lat, spot.lon)));
-  for (const distance of spot.distances) {
-    card.appendChild(createLine("result-card__line", `${capitalise(distance.name)}: ${Math.round(distance.km)} km`));
+  for (const route of spot.routes) {
+    card.appendChild(createLine("result-card__line", `${capitalise(route.name)}: ${Math.round(route.routeKm)} km drive`));
   }
   card.appendChild(createLine("result-card__line", `Surroundings: ${spot.surroundingSlopeDeg.toFixed(1)}° slope`));
   card.appendChild(createLine("result-card__score", `Score ${Math.round(spot.score)}`));

@@ -1,5 +1,6 @@
-import { cellCentre, cellSizeKm, distanceKm, dot, dotToKm, toUnitVector } from "./geo.js";
+import { cellCentre, cellSizeKm, distanceKm, toUnitVector, valueAt } from "./geo.js";
 import { findRichCells } from "./richCells.js";
+import { buildRouteGrid, computeCostField, nodeIndexAt, tracePath } from "./routes.js";
 
 export function findFlatCandidates(slopeGrid, flatLimitDeg, stepDeg) {
   const step = Math.max(1, Math.round((stepDeg * slopeGrid.width) / 360));
@@ -52,15 +53,6 @@ export function surroundingSlope(slopeGrid, row, column, radiusKm) {
   return total / count;
 }
 
-export function nearestDistanceKm(point, richCells) {
-  let bestDot = -1;
-  for (const richCell of richCells) {
-    const closeness = dot(point, richCell);
-    if (closeness > bestDot) bestDot = closeness;
-  }
-  return dotToKm(bestDot);
-}
-
 export function scoreCandidate(distancesKm, surroundingSlopeDeg, slopePenaltyKmPerDegree) {
   let total = 0;
   let nearest = Infinity;
@@ -90,41 +82,74 @@ export function pickSeparated(sortedSpots, count, minSeparationKm) {
   return picked;
 }
 
-function scoreAll(candidates, resources, slopeGrid, settings) {
+function driveCostsFor(resources, nodeIndex) {
+  const costs = [];
+  for (const resource of resources) {
+    const cost = resource.field.cost[nodeIndex];
+    if (cost === Infinity) return null;
+    costs.push(cost);
+  }
+  return costs;
+}
+
+function scoreAll(candidates, resources, routeGrid, slopeGrid, settings) {
   const scored = [];
   for (const candidate of candidates) {
-    const distancesKm = [];
-    for (const resource of resources) {
-      distancesKm.push(nearestDistanceKm(candidate.unit, resource.richCells));
-    }
+    const nodeIndex = nodeIndexAt(routeGrid, candidate.lat, candidate.lon);
+    const driveCosts = driveCostsFor(resources, nodeIndex);
+    if (!driveCosts) continue;
 
     const slope = surroundingSlope(slopeGrid, candidate.row, candidate.column, settings.surroundingsRadiusKm);
     if (slope === null) continue;
 
-    candidate.distancesKm = distancesKm;
+    candidate.nodeIndex = nodeIndex;
     candidate.surroundingSlopeDeg = slope;
-    candidate.score = scoreCandidate(distancesKm, slope, settings.slopePenaltyKmPerDegree);
+    candidate.score = scoreCandidate(driveCosts, slope, settings.slopePenaltyKmPerDegree);
     scored.push(candidate);
   }
   return scored;
 }
 
-function prepareResources(resourceGrids, settings) {
+function prepareResources(resourceGrids, routeGrid, settings) {
   const resources = [];
   for (const resourceGrid of resourceGrids) {
+    const sourceIndices = [];
+    for (const richCell of findRichCells(resourceGrid.grid, settings.richTopFraction, settings.searchStepDeg)) {
+      sourceIndices.push(nodeIndexAt(routeGrid, richCell.lat, richCell.lon));
+    }
     resources.push({
       name: resourceGrid.name,
-      richCells: findRichCells(resourceGrid.grid, settings.richTopFraction, settings.searchStepDeg),
+      unit: resourceGrid.grid.unit,
+      grid: resourceGrid.grid,
+      field: computeCostField(routeGrid, sourceIndices, settings),
     });
   }
   return resources;
 }
 
+function describeRoutes(resources, routeGrid, nodeIndex) {
+  const routes = [];
+  for (const resource of resources) {
+    const path = tracePath(routeGrid, resource.field, nodeIndex);
+    const deposit = path[path.length - 1];
+    routes.push({
+      name: resource.name,
+      unit: resource.unit,
+      routeKm: resource.field.routeKm[nodeIndex],
+      driveCost: resource.field.cost[nodeIndex],
+      depositValue: valueAt(resource.grid, deposit.lat, deposit.lon),
+      path: path,
+    });
+  }
+  return routes;
+}
+
 export function findLandingSpots(input) {
   const settings = input.settings;
-  const resources = prepareResources(input.resourceGrids, settings);
+  const routeGrid = buildRouteGrid(input.slopeGrid, settings.routeStepDeg);
+  const resources = prepareResources(input.resourceGrids, routeGrid, settings);
   const candidates = findFlatCandidates(input.slopeGrid, input.flatLimitDeg, settings.searchStepDeg);
-  const scored = scoreAll(candidates, resources, input.slopeGrid, settings);
+  const scored = scoreAll(candidates, resources, routeGrid, input.slopeGrid, settings);
 
   scored.sort((a, b) => a.score - b.score);
   const best = pickSeparated(scored, settings.resultCount, settings.minSeparationKm);
@@ -132,18 +157,11 @@ export function findLandingSpots(input) {
   const spots = [];
   for (let index = 0; index < best.length; index++) {
     const spot = best[index];
-    const distances = [];
-    for (let resourceIndex = 0; resourceIndex < resources.length; resourceIndex++) {
-      distances.push({
-        name: resources[resourceIndex].name,
-        km: spot.distancesKm[resourceIndex],
-      });
-    }
     spots.push({
       rank: index + 1,
       lat: spot.lat,
       lon: spot.lon,
-      distances: distances,
+      routes: describeRoutes(resources, routeGrid, spot.nodeIndex),
       surroundingSlopeDeg: spot.surroundingSlopeDeg,
       score: spot.score,
     });

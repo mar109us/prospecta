@@ -1,5 +1,5 @@
 import { loadDataset } from "./data/datasetLoader.js";
-import { createGlobe, flyToSpot, startRenderLoop } from "./view/globe.js";
+import { createGlobe, startRenderLoop } from "./view/globe.js";
 import { createOverlay, setLayerVisible } from "./view/overlay.js";
 import { applyElevation } from "./view/terrain.js";
 import { applyMoonTexture, applyNormalMap } from "./view/moonTexture.js";
@@ -14,13 +14,11 @@ import {
   createToggle,
   openCategories,
 } from "./view/layerToggles.js";
-import { createMarkerGroup, showMarkers, updateMarkerVisibility } from "./view/markers.js";
-import { connectSearchPanel } from "./view/searchPanel.js";
 import { buildResourceOptions } from "./view/resourcePanel.js";
 import { drawFlatLegend, drawResourceLegends, drawSlopeLegend } from "./view/legend.js";
-import { findLandingSpots } from "./data/landingSpots.js";
-import { connectDebug, connectLayerDebug, logLandingSpots } from "./debug/logState.js";
-import { DEBUG, LANDING, MOON, PANEL, RESOURCES, SLOPE, TEXTURES } from "./settings.js";
+import { connectLandingSearch } from "./app/search.js";
+import { connectDebug, connectLayerDebug } from "./debug/logState.js";
+import { DEBUG, MOON, PANEL, RESOURCES, SLOPE, TEXTURES } from "./settings.js";
 
 const RESOURCE_LAYERS = RESOURCES.layers;
 
@@ -69,49 +67,6 @@ async function addResourceLayers(globe, loaded) {
 async function addSlopeLayer(globe, loaded) {
   loaded.slope = await loadDataset(SLOPE_DATASET);
   return createSlopeOverlay(globe, loaded.slope);
-}
-
-function tickedResources(loaded) {
-  const ticked = [];
-  for (let index = 0; index < loaded.resourceGrids.length; index++) {
-    const checkbox = document.getElementById(RESOURCE_LAYERS[index].toggleId);
-    if (!checkbox.checked) continue;
-    ticked.push({
-      name: RESOURCE_LAYERS[index].datasetName,
-      grid: loaded.resourceGrids[index],
-    });
-  }
-  return ticked;
-}
-
-function runSearch(globe, loaded, markerGroup) {
-  const resourceGrids = tickedResources(loaded);
-  if (!loaded.slope) {
-    return {
-      spots: [],
-      message: "Cannot search: the slope data did not load.",
-    };
-  }
-  if (resourceGrids.length === 0) {
-    return {
-      spots: [],
-      message: "Tick at least one resource first.",
-    };
-  }
-
-  const spots = findLandingSpots({
-    resourceGrids: resourceGrids,
-    slopeGrid: loaded.slope,
-    flatLimitDeg: SLOPE.flatLimitDeg,
-    settings: LANDING,
-  });
-  showMarkers(markerGroup, spots, loaded.elevation, MOON.heightExaggeration);
-  if (LANDING.isFlyToBestOnSearch && spots.length > 0) flyToSpot(globe, spots[0].lat, spots[0].lon);
-  if (DEBUG.isEnabled) logLandingSpots(spots);
-  return {
-    spots: spots,
-    message: `Found ${spots.length} flat areas — see the list on the right.`,
-  };
 }
 
 function buildToggles(resourceOverlay, slopeOverlay) {
@@ -198,12 +153,7 @@ async function main() {
   connectCategoryToggles(toggles);
   openCategories(PANEL.openCategories);
 
-  const markerGroup = createMarkerGroup(globe);
-  globe.frameCallbacks.push(() => updateMarkerVisibility(markerGroup, globe.camera));
-  connectSearchPanel(
-    () => runSearch(globe, loaded, markerGroup),
-    (spot) => flyToSpot(globe, spot.lat, spot.lon),
-  );
+  connectLandingSearch(globe, loaded);
 
   try {
     const materials = overlayMaterials([resourceOverlay, slopeOverlay]);

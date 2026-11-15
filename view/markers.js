@@ -44,14 +44,19 @@ function createMarker(spot, elevation, exaggeration) {
   return marker;
 }
 
-export function updateMarkerVisibility(group, camera) {
+export function isOnNearSide(point, camera) {
   const cameraDistance = camera.position.length();
-  const horizon = 1 / cameraDistance;
+  const facing = point.dot(camera.position) / (point.length() * cameraDistance);
+  let isNear = false;
+  if (facing > 1 / cameraDistance) isNear = true;
+  return isNear;
+}
+
+export function updateMarkerVisibility(group, camera) {
   for (const marker of group.children) {
-    const facing = marker.position.dot(camera.position) / (marker.position.length() * cameraDistance);
-    let isOnNearSide = false;
-    if (facing > horizon) isOnNearSide = true;
-    marker.visible = isOnNearSide;
+    let anchor = marker.position;
+    if (marker.userData.anchor) anchor = marker.userData.anchor;
+    marker.visible = isOnNearSide(anchor, camera);
   }
 }
 

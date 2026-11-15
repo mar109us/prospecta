@@ -19,6 +19,7 @@ body {
 
 .panel {
   position: absolute;
+  z-index: 2;
   max-height: calc(100vh - 32px);
   overflow-y: auto;
   top: 16px;
@@ -86,6 +87,7 @@ body {
 
 .results {
   position: absolute;
+  z-index: 2;
   top: 16px;
   right: 16px;
   display: flex;
@@ -191,4 +193,26 @@ body {
   margin-left: 6px;
   color: #bbb;
   font-size: 11px;
+}
+
+.route-labels {
+  position: absolute;
+  z-index: 1;
+  inset: 0;
+  overflow: hidden;
+  pointer-events: none;
+}
+
+.route-label {
+  position: absolute;
+  top: 0;
+  left: 0;
+  padding: 2px 6px;
+  color: white;
+  font-family: system-ui, sans-serif;
+  font-size: 12px;
+  white-space: nowrap;
+  background: rgba(20, 20, 20, 0.8);
+  border-left: 3px solid white;
+  border-radius: 3px;
 }

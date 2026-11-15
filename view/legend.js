@@ -1,5 +1,6 @@
 import { curvePower, noiseRatio } from "./layerBands.js";
 import { RESOURCE_BANDS, RESOURCES, SLOPE } from "../settings.js";
+import { formatValue, shortUnit } from "./text.js";
 
 function hexToRgba(hexColour, alpha) {
   const red = parseInt(hexColour.slice(1, 3), 16);
@@ -8,10 +9,6 @@ function hexToRgba(hexColour, alpha) {
   return `rgba(${red}, ${green}, ${blue}, ${alpha})`;
 }
 
-function formatValue(value) {
-  if (Math.abs(value) >= 100) return `${Math.round(value)}`;
-  return value.toFixed(1);
-}
 
 function createSwatch(className, background, title) {
   const swatch = document.createElement("span");
@@ -58,7 +55,7 @@ export function drawResourceLegends(layers, grids) {
     for (const opacity of bandOpacities(grid)) {
       parts.push(createSwatch("legend__swatch", hexToRgba(layer.colour, opacity), `${Math.round(opacity * 100)}% opacity`));
     }
-    const unit = grid.unit.split(" ").pop();
+    const unit = shortUnit(grid.unit);
     parts.push(createLabel(`${formatValue(grid.displayMin)} – ${formatValue(grid.displayMax)} ${unit}`));
     fillLegend(`${layer.datasetName}-legend`, parts);
   }

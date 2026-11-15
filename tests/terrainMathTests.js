@@ -1,4 +1,4 @@
-import { latLonToScenePosition, elevationAtVertex, elevationToRadius } from "../view/terrainMath.js";
+import { latLonToScenePosition, scenePositionToLatLon, surfaceElevation, elevationAtVertex, elevationToRadius } from "../view/terrainMath.js";
 
 function check(testName, isPassing) {
   if (isPassing) {
@@ -59,3 +59,18 @@ function testNorthPolePointsUp() {
 
 testZeroLatLonFacesPlusX();
 testNorthPolePointsUp();
+
+function testSceneToLatLonRoundTrip() {
+  const position = latLonToScenePosition(-23.5, 141.25, 1.02);
+  const back = scenePositionToLatLon(position.x, position.y, position.z);
+  check("scene position converts back to the same lat/lon", Math.abs(back.lat + 23.5) < 0.0001 && Math.abs(back.lon - 141.25) < 0.0001);
+}
+
+testSceneToLatLonRoundTrip();
+
+function testSurfaceMatchesMeshAtAVertex() {
+  const grid = makeGrid();
+  check("surface height equals the mesh height at a vertex", surfaceElevation(grid, 0, -90) === elevationAtVertex(0.25, 0.5, grid));
+}
+
+testSurfaceMatchesMeshAtAVertex();

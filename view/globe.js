@@ -5,6 +5,7 @@ import { latLonToScenePosition } from "./terrainMath.js";
 import { easeInOut, slerpDirection } from "./cameraMath.js";
 
 const MOON_RADIUS = 1;
+const MOON_SURFACE_MARGIN = 1.1;
 
 function createScene() {
    const scene = new THREE.Scene();
@@ -14,7 +15,9 @@ function createScene() {
 
 function createCamera() {
    const aspectRatio = window.innerWidth / window.innerHeight;
-   const camera = new THREE.PerspectiveCamera(CAMERA.fov, aspectRatio, 0.005, 50);
+   const nearPlane = Math.max(0.01, CAMERA.minDistance - MOON_SURFACE_MARGIN);
+   const farPlane = CAMERA.maxDistance + 2;
+   const camera = new THREE.PerspectiveCamera(CAMERA.fov, aspectRatio, nearPlane, farPlane);
    camera.position.set(0, 0, CAMERA.startDistance);
    return camera;
 }

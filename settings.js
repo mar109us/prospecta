@@ -159,4 +159,13 @@ export const LANDING = {
   minSeparationKm: 500,
   resultCount: 10,
   isFlyToBestOnSearch: true,
+  routeStepDeg: 1,
+  maxDriveSlopeDeg: 10,
+  slopeCostPerDegree: 0.1,
+};
+
+export const ROUTES = {
+  lineWidthPx: 10,
+  liftAboveGround: 0.002,
+  curvePointsPerStep: 6,
 };

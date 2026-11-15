@@ -38,6 +38,9 @@ function setValueAt(grid, lat, lon, value) {
 function makeSettings() {
   return {
     richTopFraction: 0.0001,
+    routeStepDeg: 5,
+    maxDriveSlopeDeg: 10,
+    slopeCostPerDegree: 0.1,
     searchStepDeg: 5,
     surroundingsRadiusKm: 50,
     slopePenaltyKmPerDegree: 20,

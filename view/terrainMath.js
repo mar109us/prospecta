@@ -48,3 +48,33 @@ export function elevationAt(grid, lat, lon) {
   const column = Math.floor(((lon + 180) / 360) * grid.width) % grid.width;
   return grid.values[row * grid.width + column];
 }
+
+export function scenePositionToLatLon(x, y, z) {
+  const radius = Math.sqrt(x * x + y * y + z * z);
+  const theta = Math.acos(y / radius);
+  const phi = Math.atan2(z, -x);
+  let lon = (phi / (2 * Math.PI)) * 360 - 180;
+  if (lon < -180) lon += 360;
+  return {
+    lat: 90 - (theta / Math.PI) * 180,
+    lon: lon,
+  };
+}
+
+export function surfaceElevation(grid, lat, lon) {
+  const columnPosition = ((lon + 180) / 360) * grid.width;
+  const rowPosition = ((90 - lat) / 180) * grid.height;
+  const leftColumn = Math.floor(columnPosition);
+  const topRow = Math.min(Math.floor(rowPosition), grid.height - 1);
+  const across = columnPosition - leftColumn;
+  const down = rowPosition - topRow;
+
+  const leftU = leftColumn / grid.width;
+  const rightU = (leftColumn + 1) / grid.width;
+  const topV = 1 - topRow / grid.height;
+  const bottomV = 1 - (topRow + 1) / grid.height;
+
+  const top = elevationAtVertex(leftU, topV, grid) * (1 - across) + elevationAtVertex(rightU, topV, grid) * across;
+  const bottom = elevationAtVertex(leftU, bottomV, grid) * (1 - across) + elevationAtVertex(rightU, bottomV, grid) * across;
+  return top * (1 - down) + bottom * down;
+}
