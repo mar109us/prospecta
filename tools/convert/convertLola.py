@@ -4,6 +4,7 @@ import numpy as np
 
 from download import download_file
 from grid import HEIGHT, WIDTH, save_grid_json
+from polar import blur_longitude_by_latitude
 
 PROJECT_ROOT = Path(__file__).resolve().parents[2]
 LOLA_URL = "https://pds-geosciences.wustl.edu/lro/lro-l-lola-3-rdr-v1/lrolol_1xxx/data/lola_gdr/cylindrical/img/ldem_4.img"
@@ -11,6 +12,7 @@ LOLA_PATH = PROJECT_ROOT / "tools/convert/raw/ldem_4.img"
 LOLA_HEIGHT = 720
 LOLA_WIDTH = 1440
 METRES_PER_UNIT = 0.5
+GRID_PIXELS_PER_DEGREE = 2
 
 ELEVATION = {
     "name": "elevation",
@@ -55,6 +57,7 @@ def main():
     elevation = units_to_km(read_lola(LOLA_PATH, LOLA_HEIGHT, LOLA_WIDTH))
     elevation = start_at_180_west(elevation)
     grid = average_blocks(elevation, LOLA_WIDTH // WIDTH)
+    grid = blur_longitude_by_latitude(grid, GRID_PIXELS_PER_DEGREE)
     if grid.shape != (HEIGHT, WIDTH):
         raise SystemExit(f"Elevation grid is {grid.shape}, expected {(HEIGHT, WIDTH)}.")
 

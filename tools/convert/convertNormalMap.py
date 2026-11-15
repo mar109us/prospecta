@@ -6,6 +6,7 @@ import numpy as np
 from convertLola import start_at_180_west, units_to_km, read_lola
 from download import download_file
 from normalMap import encode_normals, fine_detail, slopes, write_ppm
+from polar import blur_longitude_by_latitude
 
 PROJECT_ROOT = Path(__file__).resolve().parents[2]
 LDEM_URL = "https://pds-geosciences.wustl.edu/lro/lro-l-lola-3-rdr-v1/lrolol_1xxx/data/lola_gdr/cylindrical/img/ldem_16.img"
@@ -31,6 +32,7 @@ def main():
     download_file(LDEM_URL, LDEM_PATH)
     elevation_m = units_to_km(read_lola(LDEM_PATH, LDEM_HEIGHT, LDEM_WIDTH)) * 1000
     elevation_m = start_at_180_west(elevation_m)
+    elevation_m = blur_longitude_by_latitude(elevation_m, PIXELS_PER_DEGREE)
 
     detail = fine_detail(elevation_m, MESH_WINDOW)
     slope_east, slope_north = slopes(detail, PIXELS_PER_DEGREE)
