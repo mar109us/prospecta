@@ -54,7 +54,7 @@ body {
 .panel--terrain {
   top: auto;
   bottom: 16px;
-  width: 480px;
+  width: 720px;
 }
 
 .panel__row {

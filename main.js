@@ -17,8 +17,9 @@ import { buildResourceOptions, colourToggleRow } from "./view/resourcePanel.js";
 import { drawFlatLegend, drawSlopeLegend } from "./view/legend.js";
 import { createResourceLayers, resourceToggles } from "./app/resourceLayers.js";
 import { connectLandingSearch } from "./app/search.js";
+import { createSunlightLayer, sunlightToggle } from "./app/sunlightLayer.js";
 import { connectDebug } from "./debug/logState.js";
-import { DEBUG, MOON, RESOURCES, SLOPE, TEXTURES } from "./settings.js";
+import { DEBUG, MOON, RESOURCES, SLOPE, SUNLIGHT, TEXTURES } from "./settings.js";
 
 const RESOURCE_LAYERS = RESOURCES.layers;
 
@@ -56,9 +57,10 @@ async function addSlopeLayer(globe, loaded) {
   return createSlopeOverlay(globe, loaded.slope);
 }
 
-function buildToggles(resources, slopeOverlay) {
+function buildToggles(resources, slopeOverlay, sunlight) {
   let toggles = [];
   if (resources) toggles = resourceToggles(resources);
+  if (sunlight) toggles.push(sunlightToggle(sunlight));
   if (slopeOverlay) {
     const setFlatOnlyVisible = (isVisible) => setFlatVisible(slopeOverlay, isVisible);
     const setDotsVisible = (isVisible) => setSlopeDotsVisible(slopeOverlay, isVisible);
@@ -89,6 +91,7 @@ async function main() {
   buildResourceOptions("resource-options", RESOURCE_LAYERS);
   colourToggleRow(FLAT_LAYER.toggleId, SLOPE.flatColour);
   colourToggleRow(SLOPE_DOTS_LAYER.toggleId, SLOPE.colours[SLOPE.colours.length - 1]);
+  colourToggleRow(SUNLIGHT.toggleId, SUNLIGHT.colour);
   drawFlatLegend("flat-legend");
   drawSlopeLegend("slope-dots-legend");
 
@@ -131,7 +134,15 @@ async function main() {
     showError(`The slope layer could not be shown. ${error.message}`);
   }
 
-  const toggles = buildToggles(resources, slopeOverlay);
+  let sunlight = null;
+  try {
+    sunlight = createSunlightLayer(globe, showError);
+  } catch (error) {
+    console.error(error);
+    showError(`The sunlight layer could not be shown. ${error.message}`);
+  }
+
+  const toggles = buildToggles(resources, slopeOverlay, sunlight);
   applyDefaultToggles(toggles);
   connectCategoryToggles(toggles);
   connectClearButton("clear-resources", toggles, "resources");
@@ -141,7 +152,9 @@ async function main() {
   try {
     let resourceOverlay = null;
     if (resources) resourceOverlay = resources.overlay;
-    const materials = overlayMaterials([resourceOverlay, slopeOverlay]);
+    let sunlightOverlay = null;
+    if (sunlight) sunlightOverlay = sunlight.overlay;
+    const materials = overlayMaterials([resourceOverlay, slopeOverlay, sunlightOverlay]);
     await applyNormalMap(globe, materials, TEXTURES.normalMapUrl, MOON.heightExaggeration);
   } catch (error) {
     console.error(error);

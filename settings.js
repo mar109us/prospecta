@@ -199,6 +199,16 @@ export const SLOPE = {
   isFlatOnByDefault: false,
 };
 
+export const SUNLIGHT = {
+  datasetName: "sunlight",
+  label: "Sunlight",
+  colour: "#FFD54F",
+  toggleId: "sunlight-toggle",
+  category: "terrain",
+  isFill: false,
+  isOnByDefault: false,
+};
+
 export const LANDING = {
   richTopFraction: 0.1,
   searchStepDeg: 1,

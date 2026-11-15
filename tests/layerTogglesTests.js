@@ -19,6 +19,7 @@ const iron = makeToggle("resources", true);
 const silicon = makeToggle("resources", true);
 const slopeFill = makeToggle("terrain", true);
 const slopeDots = makeToggle("terrain", false);
+const sunlight = makeToggle("terrain", false);
 
 function testFillHidesFillsOfOtherCategories() {
   check("fill hides fills of other categories", shouldHide(iron, slopeFill));
@@ -53,7 +54,12 @@ function testClashingDefaultsLaterFillWins() {
   check("clashing defaults: the later fill wins", visibility[0] === false && visibility[1] === true);
 }
 
+function testSunlightDoesNotHideResources() {
+  check("sunlight toggle does not hide resources", !shouldHide(iron, sunlight) && !shouldHide(sunlight, iron));
+}
+
 testFillHidesFillsOfOtherCategories();
+testSunlightDoesNotHideResources();
 testFillKeepsSameCategoryLayers();
 testDotsNeverHideAnything();
 testDotsAreNeverHidden();
