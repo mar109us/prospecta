@@ -13,6 +13,7 @@ def make_pixel(min_lat, max_lat, min_lon, max_lon, value):
         "min_lon": min_lon,
         "max_lon": max_lon,
         "value": value,
+        "uncertainty": 1,
     }
 
 
@@ -48,8 +49,19 @@ def test_two_levels_give_16_tiles():
     assert len(tiles) == 16
 
 
+def test_quarter_keeps_parent_uncertainty():
+    parent = make_pixel(0, 2, 0, 2, 10)
+    parent["uncertainty"] = 4.5
+    neighbour = make_pixel(0, 2, 2, 4, 20)
+    neighbour["uncertainty"] = 1
+    tiles = subdivide([parent, neighbour], 1)
+    for tile in tiles[0:4]:
+        assert tile["uncertainty"] == 4.5
+
+
 def run_tests():
     tests = [
+        test_quarter_keeps_parent_uncertainty,
         test_pixel_splits_into_4_quarters_covering_it,
         test_quarter_without_neighbours_keeps_parent_value,
         test_quarter_blends_half_parent_half_neighbour,

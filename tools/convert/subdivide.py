@@ -8,6 +8,7 @@ def make_tile(min_lat, max_lat, min_lon, max_lon):
         "min_lon": min_lon,
         "max_lon": max_lon,
         "value": None,
+        "uncertainty": None,
     }
 
 
@@ -46,6 +47,7 @@ def subdivide_once(pixels):
         parent_neighbours = find_neighbours(parent, pixels, arrays)
         for quarter in split_into_quarters(parent):
             quarter["value"] = quarter_value(parent, quarter, parent_neighbours)
+            quarter["uncertainty"] = parent["uncertainty"]
             quarters.append(quarter)
     return quarters
 

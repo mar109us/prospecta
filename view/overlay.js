@@ -1,18 +1,17 @@
 import * as THREE from "three";
-import { buildOverlayPixels } from "./overlayPixels.js";
-import { applySteppedOpacity } from "./steppedOpacityShader.js";
+import { buildLayerPixels, MAX_LAYERS } from "./overlayPixels.js";
+import { applyLayerShader } from "./layerShader.js";
+import { BAND_COUNT, curvePower, noiseRatio } from "./layerBands.js";
 
-const STEP_COUNT = 5;
-
-function createOverlayTexture(grid, hexColour) {
-  const pixels = buildOverlayPixels(grid, hexColour);
+function createLayerTexture(grids) {
+  const pixels = buildLayerPixels(grids);
   const texture = new THREE.DataTexture(
     pixels,
-    grid.width,
-    grid.height,
+    grids[0].width,
+    grids[0].height,
     THREE.RGBAFormat,
   );
-  texture.colorSpace = THREE.SRGBColorSpace;
+  texture.colorSpace = THREE.NoColorSpace;
   texture.magFilter = THREE.LinearFilter;
   texture.minFilter = THREE.LinearFilter;
   texture.wrapS = THREE.RepeatWrapping;
@@ -20,9 +19,47 @@ function createOverlayTexture(grid, hexColour) {
   return texture;
 }
 
-export function createOverlay(globe, grid, hexColour) {
+function createLayerColours(layers) {
+  const colours = [];
+  for (let index = 0; index < MAX_LAYERS; index++) {
+    if (index < layers.length) {
+      colours.push(new THREE.Color(layers[index].colour));
+    } else {
+      colours.push(new THREE.Color("white"));
+    }
+  }
+  return colours;
+}
+
+function createCurvePowers(grids) {
+  const powers = new THREE.Vector4(2, 2, 2, 2);
+  for (let index = 0; index < grids.length; index++) {
+    powers.setComponent(index, curvePower(noiseRatio(grids[index])));
+  }
+  return powers;
+}
+
+function createLayerUniforms(layers, grids) {
+  return {
+    bandCount: {
+      value: BAND_COUNT,
+    },
+    layerCurvePowers: {
+      value: createCurvePowers(grids),
+    },
+    layerColours: {
+      value: createLayerColours(layers),
+    },
+    layerVisible: {
+      value: new THREE.Vector4(1, 1, 1, 1),
+    },
+  };
+}
+
+export function createOverlay(globe, layers, grids) {
+  const uniforms = createLayerUniforms(layers, grids);
   const material = new THREE.MeshStandardMaterial({
-    map: createOverlayTexture(grid, hexColour),
+    map: createLayerTexture(grids),
     roughness: 1,
     transparent: true,
     depthWrite: false,
@@ -30,12 +67,19 @@ export function createOverlay(globe, grid, hexColour) {
     polygonOffsetFactor: -1,
     polygonOffsetUnits: -1,
   });
-  applySteppedOpacity(material, STEP_COUNT);
-  const overlay = new THREE.Mesh(globe.moon.geometry, material);
-  globe.scene.add(overlay);
-  return overlay;
+  applyLayerShader(material, uniforms);
+
+  const mesh = new THREE.Mesh(globe.moon.geometry, material);
+  globe.scene.add(mesh);
+
+  return {
+    mesh: mesh,
+    uniforms: uniforms,
+  };
 }
 
-export function setOverlayVisible(overlay, isVisible) {
-  overlay.visible = isVisible;
+export function setLayerVisible(overlay, index, isVisible) {
+  let visibility = 0;
+  if (isVisible) visibility = 1;
+  overlay.uniforms.layerVisible.value.setComponent(index, visibility);
 }

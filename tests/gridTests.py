@@ -64,8 +64,53 @@ def test_empty_cells_become_null_in_json():
     assert output["max"] == 5.12
 
 
+def test_display_range_ignores_extreme_2_percent():
+    grid = make_empty_grid()
+    grid[:] = 50
+    grid[0, :] = 0
+    grid[-1, :] = 100
+    info = {
+        "name": "test",
+        "unit": "wt%",
+        "source": "test",
+    }
+
+    with tempfile.TemporaryDirectory() as folder:
+        path = Path(folder) / "test.json"
+        save_grid_json(grid, info, path)
+        with open(path) as file:
+            output = json.load(file)
+
+    assert output["min"] == 0 and output["max"] == 100
+    assert output["displayMin"] == 50 and output["displayMax"] == 50
+
+
+def test_json_has_typical_uncertainty():
+    grid = make_empty_grid()
+    grid[:] = 40
+    uncertainty_grid = make_empty_grid()
+    uncertainty_grid[:] = 2
+    uncertainty_grid[0, :] = 9
+    info = {
+        "name": "test",
+        "unit": "wt%",
+        "source": "test",
+    }
+
+    with tempfile.TemporaryDirectory() as folder:
+        path = Path(folder) / "test.json"
+        save_grid_json(grid, info, path, uncertainty_grid)
+        with open(path) as file:
+            output = json.load(file)
+
+    assert output["uncertainty"] == 2
+    assert len(output["uncertainties"]) == grid.size
+
+
 def run_tests():
     tests = [
+        test_json_has_typical_uncertainty,
+        test_display_range_ignores_extreme_2_percent,
         test_first_cell_centre_is_top_left,
         test_last_cell_centre_is_bottom_right,
         test_pixel_fills_cells_whose_centre_is_inside,

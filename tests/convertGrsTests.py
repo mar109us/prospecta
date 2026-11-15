@@ -14,6 +14,7 @@ def make_pixel(min_lat, max_lat, min_lon, max_lon, value):
         "min_lon": min_lon,
         "max_lon": max_lon,
         "value": value,
+        "uncertainty": 1,
     }
 
 

@@ -1,15 +1,22 @@
 import { loadDataset } from "./data/datasetLoader.js";
 import { createGlobe, startRenderLoop } from "./view/globe.js";
-import { createOverlay, setOverlayVisible } from "./view/overlay.js";
+import { createOverlay, setLayerVisible } from "./view/overlay.js";
 import { connectDebug, connectLayerDebug } from "./debug/logState.js";
 
 const IS_DEBUG = false;
 
-const IRON_LAYER = {
-  datasetName: "iron",
-  colour: "#B7410E",
-  toggleId: "iron-toggle",
-};
+const LAYERS = [
+  {
+    datasetName: "iron",
+    colour: "#B7410E",
+    toggleId: "iron-toggle",
+  },
+  {
+    datasetName: "silicon",
+    colour: "#2F7FD8",
+    toggleId: "silicon-toggle",
+  },
+];
 
 function showError(message) {
   const errorElement = document.getElementById("error");
@@ -17,18 +24,23 @@ function showError(message) {
   errorElement.hidden = false;
 }
 
-function connectToggle(layer, overlay) {
-  const checkbox = document.getElementById(layer.toggleId);
-  checkbox.addEventListener("change", () => {
-    setOverlayVisible(overlay, checkbox.checked);
-  });
+async function loadGrids(layers) {
+  const grids = [];
+  for (const layer of layers) {
+    const grid = await loadDataset(layer.datasetName);
+    grids.push(grid);
+    if (IS_DEBUG) connectLayerDebug(layer, grid);
+  }
+  return grids;
 }
 
-async function addLayer(globe, layer) {
-  const grid = await loadDataset(layer.datasetName);
-  const overlay = createOverlay(globe, grid, layer.colour);
-  connectToggle(layer, overlay);
-  if (IS_DEBUG) connectLayerDebug(layer, grid);
+function connectToggles(layers, overlay) {
+  for (let index = 0; index < layers.length; index++) {
+    const checkbox = document.getElementById(layers[index].toggleId);
+    checkbox.addEventListener("change", () => {
+      setLayerVisible(overlay, index, checkbox.checked);
+    });
+  }
 }
 
 async function main() {
@@ -43,10 +55,12 @@ async function main() {
   startRenderLoop(globe);
 
   try {
-    await addLayer(globe, IRON_LAYER);
+    const grids = await loadGrids(LAYERS);
+    const overlay = createOverlay(globe, LAYERS, grids);
+    connectToggles(LAYERS, overlay);
   } catch (error) {
     console.error(error);
-    showError(`The iron layer could not be shown. ${error.message}`);
+    showError(`The resource layers could not be shown. ${error.message}`);
   }
 }
 
