@@ -3,6 +3,8 @@ uniform float bandCount;
 uniform vec4 layerCurvePowers;
 uniform vec3 layerColours[4];
 uniform vec4 layerVisible;
+uniform vec4 layerLatLimits;
+uniform float edgeFadeDeg;
 
 float bandStrength(float value, float power) {
   float position = value * bandCount;
@@ -22,6 +24,10 @@ const LAYER_MAP_FRAGMENT = `
     bandStrength(layerValues.b, layerCurvePowers.b),
     bandStrength(layerValues.a, layerCurvePowers.a)
   ) * layerVisible;
+
+  float absoluteLat = abs((vMapUv.y - 0.5) * 180.0);
+  vec4 edgeFade = vec4(1.0) - smoothstep(layerLatLimits - edgeFadeDeg, layerLatLimits, vec4(absoluteLat));
+  strengths *= edgeFade;
 
   vec3 colourSum = vec3(0.0);
   float strengthSum = 0.0;

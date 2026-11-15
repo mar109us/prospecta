@@ -1,16 +1,19 @@
 import * as THREE from "three";
-import { buildLayerPixels, MAX_LAYERS } from "./overlayPixels.js";
+import { coverageLatLimit, fillChannel, MAX_LAYERS } from "./overlayPixels.js";
 import { applyLayerShader } from "./layerShader.js";
 import { curvePower, noiseRatio } from "./layerBands.js";
 import { RESOURCE_BANDS, RESOURCES } from "../settings.js";
 
+const GRID_WIDTH = 720;
+const GRID_HEIGHT = 360;
+const NO_FADE_LIMIT_DEG = 1000;
 
-function createLayerTexture(grids) {
-  const pixels = buildLayerPixels(grids);
+
+function createLayerTexture(pixels) {
   const texture = new THREE.DataTexture(
     pixels,
-    grids[0].width,
-    grids[0].height,
+    GRID_WIDTH,
+    GRID_HEIGHT,
     THREE.RGBAFormat,
   );
   texture.colorSpace = THREE.NoColorSpace;
@@ -33,21 +36,13 @@ function createLayerColours(layers) {
   return colours;
 }
 
-function createCurvePowers(grids) {
-  const powers = new THREE.Vector4(2, 2, 2, 2);
-  for (let index = 0; index < grids.length; index++) {
-    powers.setComponent(index, curvePower(noiseRatio(grids[index])));
-  }
-  return powers;
-}
-
-function createLayerUniforms(layers, grids) {
+function createLayerUniforms(layers) {
   return {
     bandCount: {
       value: RESOURCE_BANDS.bandCount,
     },
     layerCurvePowers: {
-      value: createCurvePowers(grids),
+      value: new THREE.Vector4(2, 2, 2, 2),
     },
     layerColours: {
       value: createLayerColours(layers),
@@ -55,13 +50,21 @@ function createLayerUniforms(layers, grids) {
     layerVisible: {
       value: new THREE.Vector4(1, 1, 1, 1),
     },
+    layerLatLimits: {
+      value: new THREE.Vector4(90, 90, 90, 90),
+    },
+    edgeFadeDeg: {
+      value: RESOURCES.edgeFadeDeg,
+    },
   };
 }
 
-function createChunk(globe, layers, grids) {
-  const uniforms = createLayerUniforms(layers, grids);
+function createChunk(globe, layers) {
+  const pixels = new Uint8Array(GRID_WIDTH * GRID_HEIGHT * 4);
+  const texture = createLayerTexture(pixels);
+  const uniforms = createLayerUniforms(layers);
   const material = new THREE.MeshStandardMaterial({
-    map: createLayerTexture(grids),
+    map: texture,
     roughness: 1,
     transparent: true,
     opacity: RESOURCES.opacity,
@@ -77,16 +80,18 @@ function createChunk(globe, layers, grids) {
 
   return {
     mesh: mesh,
+    pixels: pixels,
+    texture: texture,
     uniforms: uniforms,
   };
 }
 
-export function createOverlay(globe, layers, grids) {
+export function createOverlay(globe, layers) {
   const chunks = [];
   const meshes = [];
   for (let start = 0; start < layers.length; start += MAX_LAYERS) {
     const end = start + MAX_LAYERS;
-    const chunk = createChunk(globe, layers.slice(start, end), grids.slice(start, end));
+    const chunk = createChunk(globe, layers.slice(start, end));
     chunks.push(chunk);
     meshes.push(chunk.mesh);
   }
@@ -102,4 +107,18 @@ export function setLayerVisible(overlay, index, isVisible) {
   if (isVisible) visibility = 1;
   const chunk = overlay.chunks[Math.floor(index / MAX_LAYERS)];
   chunk.uniforms.layerVisible.value.setComponent(index % MAX_LAYERS, visibility);
+}
+
+export function addLayerGrid(overlay, index, grid) {
+  if (grid.width !== GRID_WIDTH || grid.height !== GRID_HEIGHT) {
+    throw new Error(`Dataset "${grid.name}" is ${grid.width}x${grid.height}, but layers must be ${GRID_WIDTH}x${GRID_HEIGHT}.`);
+  }
+  const chunk = overlay.chunks[Math.floor(index / MAX_LAYERS)];
+  const channel = index % MAX_LAYERS;
+  fillChannel(chunk.pixels, grid, channel);
+  chunk.texture.needsUpdate = true;
+  chunk.uniforms.layerCurvePowers.value.setComponent(channel, curvePower(noiseRatio(grid)));
+  let latLimit = coverageLatLimit(grid);
+  if (latLimit >= 90) latLimit = NO_FADE_LIMIT_DEG;
+  chunk.uniforms.layerLatLimits.value.setComponent(channel, latLimit);
 }

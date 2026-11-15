@@ -1,14 +1,4 @@
-function groupNames(layers) {
-  const names = [];
-  for (const layer of layers) {
-    let isKnown = false;
-    for (const name of names) {
-      if (name === layer.group) isKnown = true;
-    }
-    if (!isKnown) names.push(layer.group);
-  }
-  return names;
-}
+import { partIndices } from "../data/layerParts.js";
 
 function createOption(layer) {
   const option = document.createElement("div");
@@ -19,8 +9,10 @@ function createOption(layer) {
   checkbox.id = layer.toggleId;
 
   const label = document.createElement("label");
+  label.id = `${layer.datasetName}-label`;
   label.htmlFor = layer.toggleId;
   label.textContent = layer.label;
+  if (layer.note) label.title = layer.note;
 
   option.appendChild(checkbox);
   option.appendChild(label);
@@ -34,6 +26,20 @@ function createLegendSlot(layer) {
   return legend;
 }
 
+function appendLayer(container, layers, layer) {
+  container.appendChild(createOption(layer));
+  container.appendChild(createLegendSlot(layer));
+  for (const partIndex of partIndices(layers, layer.datasetName)) {
+    container.appendChild(createLegendSlot(layers[partIndex]));
+  }
+}
+
+function createDivider() {
+  const divider = document.createElement("div");
+  divider.className = "panel__divider";
+  return divider;
+}
+
 export function buildResourceOptions(containerId, layers) {
   const container = document.getElementById(containerId);
   if (!container) {
@@ -41,16 +47,15 @@ export function buildResourceOptions(containerId, layers) {
     return;
   }
 
-  for (const groupName of groupNames(layers)) {
-    const heading = document.createElement("h3");
-    heading.className = "panel__group";
-    heading.textContent = groupName;
-    container.appendChild(heading);
-
-    for (const layer of layers) {
-      if (layer.group !== groupName) continue;
-      container.appendChild(createOption(layer));
-      container.appendChild(createLegendSlot(layer));
-    }
+  for (const layer of layers) {
+    if (layer.partOf) continue;
+    if (layer.isMineral) continue;
+    appendLayer(container, layers, layer);
+  }
+  container.appendChild(createDivider());
+  for (const layer of layers) {
+    if (layer.partOf) continue;
+    if (!layer.isMineral) continue;
+    appendLayer(container, layers, layer);
   }
 }

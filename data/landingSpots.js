@@ -138,21 +138,43 @@ function scoreAll(candidates, resources, routeGrid, slopeGrid, flatLimitDeg, set
   return scored;
 }
 
+function richSourceIndices(grids, routeGrid, settings) {
+  const sourceIndices = [];
+  for (const grid of grids) {
+    for (const richCell of findRichCells(grid, settings.richTopFraction, settings.searchStepDeg)) {
+      sourceIndices.push(nodeIndexAt(routeGrid, richCell.lat, richCell.lon));
+    }
+  }
+  return sourceIndices;
+}
+
 function prepareResources(resourceGrids, routeGrid, settings) {
   const resources = [];
   for (const resourceGrid of resourceGrids) {
-    const sourceIndices = [];
-    for (const richCell of findRichCells(resourceGrid.grid, settings.richTopFraction, settings.searchStepDeg)) {
-      sourceIndices.push(nodeIndexAt(routeGrid, richCell.lat, richCell.lon));
-    }
+    const sourceIndices = richSourceIndices(resourceGrid.grids, routeGrid, settings);
     resources.push({
       name: resourceGrid.name,
-      unit: resourceGrid.grid.unit,
-      grid: resourceGrid.grid,
+      grids: resourceGrid.grids,
       field: computeCostField(routeGrid, sourceIndices, settings),
     });
   }
   return resources;
+}
+
+function depositReading(grids, lat, lon) {
+  for (const grid of grids) {
+    const value = valueAt(grid, lat, lon);
+    if (value !== null) {
+      return {
+        value: value,
+        unit: grid.unit,
+      };
+    }
+  }
+  return {
+    value: null,
+    unit: grids[0].unit,
+  };
 }
 
 function describeRoutes(resources, routeGrid, nodeIndex) {
@@ -160,12 +182,13 @@ function describeRoutes(resources, routeGrid, nodeIndex) {
   for (const resource of resources) {
     const path = tracePath(routeGrid, resource.field, nodeIndex);
     const deposit = path[path.length - 1];
+    const reading = depositReading(resource.grids, deposit.lat, deposit.lon);
     routes.push({
       name: resource.name,
-      unit: resource.unit,
+      unit: reading.unit,
       routeKm: resource.field.routeKm[nodeIndex],
       driveCost: resource.field.cost[nodeIndex],
-      depositValue: valueAt(resource.grid, deposit.lat, deposit.lon),
+      depositValue: reading.value,
       path: path,
     });
   }

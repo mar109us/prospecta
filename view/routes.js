@@ -4,7 +4,7 @@ import { LineGeometry } from "three/addons/lines/LineGeometry.js";
 import { LineMaterial } from "three/addons/lines/LineMaterial.js";
 import { elevationToRadius, latLonToScenePosition, scenePositionToLatLon, surfaceElevation } from "./terrainMath.js";
 import { isOnNearSide } from "./markers.js";
-import { capitalise, formatValue, shortUnit } from "./text.js";
+import { formatValue, layerLabel, shortUnit } from "./text.js";
 import { ROUTES } from "../settings.js";
 
 function groundPoint(lat, lon, elevation, exaggeration) {
@@ -52,7 +52,7 @@ function createRouteLine(points, colour) {
 
 function labelText(route) {
   const value = `${formatValue(route.depositValue)} ${shortUnit(route.unit)}`;
-  return `${capitalise(route.name)}`;
+  return layerLabel(route.name);
 }
 
 function createLabel(text, colour) {

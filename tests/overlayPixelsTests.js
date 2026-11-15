@@ -1,4 +1,4 @@
-import { buildLayerPixels, valueToByte } from "../view/overlayPixels.js";
+import { buildLayerPixels, coverageLatLimit, fillChannel, valueToByte } from "../view/overlayPixels.js";
 
 function check(testName, isPassing) {
   if (isPassing) {
@@ -101,3 +101,41 @@ testNorthRowEndsAtTopOfTexture();
 testIronInRedSiliconInGreen();
 testUnusedChannelsStayZero();
 testDifferentSizeGridsThrow();
+
+function testFillingAChannelLeavesOthersUntouched() {
+  const pixels = new Uint8Array(2 * 4);
+  pixels[0] = 77;
+  fillChannel(pixels, makeGrid("silicon", [30, 30]), 1);
+  check("filling a channel leaves the other channels untouched", pixels[0] === 77 && pixels[1] === 255 && pixels[5] === 255);
+}
+
+testFillingAChannelLeavesOthersUntouched();
+
+function makeBandGrid(firstRowWithData, lastRowWithData) {
+  const values = [];
+  for (let row = 0; row < 36; row++) {
+    for (let column = 0; column < 4; column++) {
+      if (row >= firstRowWithData && row <= lastRowWithData) {
+        values.push(1);
+      } else {
+        values.push(null);
+      }
+    }
+  }
+  return {
+    width: 4,
+    height: 36,
+    values: values,
+  };
+}
+
+function testCoverageLimitOfAPartialMap() {
+  check("a map covering 50S-50N has a 50 degree limit", coverageLatLimit(makeBandGrid(8, 27)) === 50);
+}
+
+function testCoverageLimitOfAGlobalMap() {
+  check("a global map has a 90 degree limit", coverageLatLimit(makeBandGrid(0, 35)) === 90);
+}
+
+testCoverageLimitOfAPartialMap();
+testCoverageLimitOfAGlobalMap();

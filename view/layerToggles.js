@@ -54,13 +54,17 @@ export function connectCategoryToggles(toggles) {
   }
 }
 
-export function openCategories(categoryNames) {
-  for (const categoryName of categoryNames) {
-    const section = document.getElementById(`${categoryName}-category`);
-    if (!section) {
-      console.error(`Cannot open panel category "${categoryName}": no element with id "${categoryName}-category".`);
-      continue;
-    }
-    section.open = true;
+export function connectClearButton(buttonId, toggles, category) {
+  const button = document.getElementById(buttonId);
+  if (!button) {
+    console.error(`Cannot connect clear button: no element with id "${buttonId}".`);
+    return;
   }
+  button.addEventListener("click", () => {
+    for (const toggle of toggles) {
+      if (toggle.category !== category) continue;
+      toggle.checkbox.checked = false;
+      toggle.setVisible(false);
+    }
+  });
 }

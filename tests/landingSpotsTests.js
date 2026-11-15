@@ -97,11 +97,11 @@ function testBestSpotLiesBetweenTwoDeposits() {
     resourceGrids: [
       {
         name: "iron",
-        grid: iron,
+        grids: [iron],
       },
       {
         name: "silicon",
-        grid: silicon,
+        grids: [silicon],
       },
     ],
     slopeGrid: makeGrid("slope", 0),
@@ -109,6 +109,34 @@ function testBestSpotLiesBetweenTwoDeposits() {
     settings: makeSettings(),
   });
   check("best spot lies between two deposits", Math.abs(spots[0].lon) <= 5);
+}
+
+function testWaterIceCountsDepositsFromBothGrids() {
+  const globalHydrogen = makeGrid("hydrogen", null);
+  const polarHydrogen = makeGrid("polarHydrogen", null);
+  setValueAt(globalHydrogen, 2.5, -177.5, 100);
+  setValueAt(polarHydrogen, 2.5, 2.5, 100);
+
+  const spots = findLandingSpots({
+    resourceGrids: [
+      {
+        name: "hydrogen",
+        grids: [globalHydrogen, polarHydrogen],
+      },
+    ],
+    slopeGrid: makeGrid("slope", 0),
+    flatLimitDeg: 5,
+    settings: makeSettings(),
+  });
+  let hasSpotNearGlobalDeposit = false;
+  let hasSpotNearPolarDeposit = false;
+  for (const spot of spots) {
+    if (spot.routes[0].routeKm > 200) continue;
+    if (Math.abs(spot.lon - 2.5) < 10) hasSpotNearPolarDeposit = true;
+    if (Math.abs(spot.lon) > 170) hasSpotNearGlobalDeposit = true;
+  }
+  check("water ice is one resource", spots[0].routes.length === 1);
+  check("water ice counts deposits from both grids", hasSpotNearGlobalDeposit && hasSpotNearPolarDeposit);
 }
 
 function testFullPlainHasNoFlatPenalty() {
@@ -127,6 +155,7 @@ function testFlatShareCountsFlatCells() {
 }
 
 testFullPlainHasNoFlatPenalty();
+testWaterIceCountsDepositsFromBothGrids();
 testNoFlatGroundGetsFullPenalty();
 testFlatShareCountsFlatCells();
 testEqualDistancesBeatUnevenOnes();

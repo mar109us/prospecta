@@ -42,7 +42,6 @@ def make_dataset(name, unit, column, uncertainty_column, scale, is_zero_missing)
 DATASETS = [
     make_dataset("iron", "FeO wt%", 12, 51, OXIDE_SCALE, True),
     make_dataset("silicon", "SiO2 wt%", 9, 33, OXIDE_SCALE, False),
-    make_dataset("titanium", "TiO2 wt%", 11, 46, OXIDE_SCALE, False),
     make_dataset("magnesium", "MgO wt%", 7, 16, OXIDE_SCALE, False),
     make_dataset("aluminium", "Al2O3 wt%", 8, 25, OXIDE_SCALE, False),
     make_dataset("calcium", "CaO wt%", 10, 40, OXIDE_SCALE, False),

@@ -26,7 +26,7 @@ function checkGrids(grids) {
   }
 }
 
-function fillChannel(pixels, grid, channel) {
+export function fillChannel(pixels, grid, channel) {
   for (let row = 0; row < grid.height; row++) {
     const textureRow = grid.height - 1 - row;
 
@@ -47,4 +47,23 @@ export function buildLayerPixels(grids) {
   }
 
   return pixels;
+}
+
+function rowHasData(grid, row) {
+  for (let column = 0; column < grid.width; column++) {
+    if (grid.values[row * grid.width + column] !== null) return true;
+  }
+  return false;
+}
+
+export function coverageLatLimit(grid) {
+  const rowDeg = 180 / grid.height;
+  let northRow = 0;
+  while (northRow < grid.height && !rowHasData(grid, northRow)) northRow++;
+  let southRow = grid.height - 1;
+  while (southRow > 0 && !rowHasData(grid, southRow)) southRow--;
+
+  const northLat = 90 - northRow * rowDeg;
+  const southLat = 90 - (southRow + 1) * rowDeg;
+  return Math.max(Math.abs(northLat), Math.abs(southLat));
 }

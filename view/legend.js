@@ -47,18 +47,16 @@ export function bandOpacities(grid) {
   return opacities;
 }
 
-export function drawResourceLegends(layers, grids) {
-  for (let index = 0; index < layers.length; index++) {
-    const layer = layers[index];
-    const grid = grids[index];
-    const parts = [];
-    for (const opacity of bandOpacities(grid)) {
-      parts.push(createSwatch("legend__swatch", hexToRgba(layer.colour, opacity), `${Math.round(opacity * 100)}% opacity`));
-    }
-    const unit = shortUnit(grid.unit);
-    parts.push(createLabel(`${formatValue(grid.displayMin)} – ${formatValue(grid.displayMax)} ${unit}`));
-    fillLegend(`${layer.datasetName}-legend`, parts);
+export function drawResourceLegend(layer, grid) {
+  const parts = [];
+  for (const opacity of bandOpacities(grid)) {
+    parts.push(createSwatch("legend__swatch", hexToRgba(layer.colour, opacity), `${Math.round(opacity * 100)}% opacity`));
   }
+  const unit = shortUnit(grid.unit);
+  let rangeText = `${formatValue(grid.displayMin)} – ${formatValue(grid.displayMax)} ${unit}`;
+  if (layer.legendPrefix) rangeText = `${layer.legendPrefix} ${rangeText}`;
+  parts.push(createLabel(rangeText));
+  fillLegend(`${layer.datasetName}-legend`, parts);
 }
 
 function slopeBandName(index) {

@@ -5,21 +5,48 @@ import { createRouteGroups, showRoutes, updateRoutes } from "../view/routes.js";
 import { connectSearchPanel } from "../view/searchPanel.js";
 import { connectMarkerPicking } from "../view/markerPicking.js";
 import { setFocus } from "../view/slopeOverlay.js";
+import { partIndices } from "../data/layerParts.js";
 import { logLandingSpots } from "../debug/logState.js";
 import { DEBUG, LANDING, MOON, RESOURCES, SLOPE } from "../settings.js";
 
+function loadedGrids(loaded, index) {
+  const indices = [index];
+  for (const partIndex of partIndices(RESOURCES.layers, RESOURCES.layers[index].datasetName)) {
+    indices.push(partIndex);
+  }
+
+  const grids = [];
+  for (const layerIndex of indices) {
+    const grid = loaded.resourceGrids[layerIndex];
+    if (!grid) return null;
+    grids.push(grid);
+  }
+  return grids;
+}
+
 function tickedResources(loaded) {
   const ticked = [];
-  for (let index = 0; index < loaded.resourceGrids.length; index++) {
+  const stillLoading = [];
+  for (let index = 0; index < RESOURCES.layers.length; index++) {
     const layer = RESOURCES.layers[index];
+    if (layer.partOf) continue;
     const checkbox = document.getElementById(layer.toggleId);
     if (!checkbox.checked) continue;
+
+    const grids = loadedGrids(loaded, index);
+    if (!grids) {
+      stillLoading.push(layer.label);
+      continue;
+    }
     ticked.push({
       name: layer.datasetName,
-      grid: loaded.resourceGrids[index],
+      grids: grids,
     });
   }
-  return ticked;
+  return {
+    ticked: ticked,
+    stillLoading: stillLoading,
+  };
 }
 
 function selectSpot(search, spot) {
@@ -29,11 +56,18 @@ function selectSpot(search, spot) {
 }
 
 function runSearch(search) {
-  const resourceGrids = tickedResources(search.loaded);
+  const resources = tickedResources(search.loaded);
+  const resourceGrids = resources.ticked;
   if (!search.loaded.slope) {
     return {
       spots: [],
       message: "Cannot search: the slope data did not load.",
+    };
+  }
+  if (resources.stillLoading.length > 0) {
+    return {
+      spots: [],
+      message: `Still loading: ${resources.stillLoading.join(", ")}. Try again in a moment.`,
     };
   }
   if (resourceGrids.length === 0) {
