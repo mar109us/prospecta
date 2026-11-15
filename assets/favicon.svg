@@ -1,0 +1,1 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 30 30"><defs><mask id="crater"><rect width="30" height="30" fill="#fff"/><circle cx="19" cy="11" r="3.5" fill="#000"/></mask></defs><style>.moon{fill:#141413}@media (prefers-color-scheme:dark){.moon{fill:#F2F1EC}}</style><circle class="moon" cx="15" cy="15" r="14" mask="url(#crater)"/></svg>

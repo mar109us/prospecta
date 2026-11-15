@@ -17,12 +17,28 @@ body {
   display: block;
 }
 
+.logo {
+  position: absolute;
+  z-index: 2;
+  top: 16px;
+  left: 16px;
+  width: 300px;
+  padding: 0 16px;
+  line-height: 0;
+  user-select: none;
+}
+
+.logo img {
+  width: 100%;
+  height: auto;
+}
+
 .panel {
   position: absolute;
   z-index: 2;
-  max-height: calc(100vh - 32px);
+  max-height: calc(100vh - 96px);
   overflow-y: auto;
-  top: 16px;
+  top: 80px;
   left: 16px;
   display: flex;
   flex-direction: column;

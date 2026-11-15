@@ -1,64 +1,120 @@
 <!doctype html>
 <html lang="en">
-  <head>
-    <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>Prospector</title>
-    <link rel="stylesheet" href="style.css" />
-    <script type="importmap">
-      {
-        "imports": {
-          "three": "./vendor/three.module.js",
-          "three/addons/": "./vendor/addons/"
-        }
-      }
-    </script>
-    <script type="module" src="main.js"></script>
-  </head>
-  <body>
-    <main id="globe" class="globe"></main>
+   <head>
+      <meta charset="utf-8" />
+      <meta
+         name="viewport"
+         content="width=device-width, initial-scale=1" />
+      <title>prospecta</title>
+      <link
+         rel="icon"
+         type="image/svg+xml"
+         href="assets/favicon.svg" />
+      <link
+         rel="stylesheet"
+         href="style.css" />
+      <script type="importmap">
+         {
+           "imports": {
+             "three": "./vendor/three.module.js",
+             "three/addons/": "./vendor/addons/"
+           }
+         }
+      </script>
+      <script
+         type="module"
+         src="main.js"></script>
+   </head>
+   <body>
+      <header class="logo">
+         <img
+            src="assets/logo.svg"
+            alt="Prospecta"
+            width="194"
+            height="40" />
+      </header>
 
-    <aside class="panel">
-      <section class="panel__search">
-        <button type="button" id="search-button" class="panel__button">Search</button>
-        <p id="search-status" class="panel__status" aria-live="polite"></p>
-      </section>
-      <section id="resources-category" class="panel__category">
-        <div id="resource-options" class="panel__options"></div>
-        <button type="button" id="clear-resources" class="panel__clear">Clear all</button>
-      </section>
-      <p id="error" class="panel__error" role="alert" hidden></p>
-    </aside>
+      <main
+         id="globe"
+         class="globe"></main>
 
-    <aside class="panel panel--terrain">
-      <section id="terrain-category" class="panel__category">
-        <div class="panel__row">
-          <div class="panel__layer">
-            <div id="flat-legend" class="legend"></div>
-            <div class="panel__option">
-              <input type="checkbox" id="flat-toggle" />
-              <label for="flat-toggle">
-                <span class="panel__swatch"></span>
-                <span>Flat areas only</span>
-              </label>
+      <aside class="panel">
+         <section class="panel__search">
+            <button
+               type="button"
+               id="search-button"
+               class="panel__button">
+               Search
+            </button>
+            <p
+               id="search-status"
+               class="panel__status"
+               aria-live="polite"></p>
+         </section>
+         <section
+            id="resources-category"
+            class="panel__category">
+            <div
+               id="resource-options"
+               class="panel__options"></div>
+            <button
+               type="button"
+               id="clear-resources"
+               class="panel__clear">
+               Clear all
+            </button>
+         </section>
+         <p
+            id="error"
+            class="panel__error"
+            role="alert"
+            hidden></p>
+      </aside>
+
+      <aside class="panel panel--terrain">
+         <section
+            id="terrain-category"
+            class="panel__category">
+            <div class="panel__row">
+               <div class="panel__layer">
+                  <div
+                     id="flat-legend"
+                     class="legend"></div>
+                  <div class="panel__option">
+                     <input
+                        type="checkbox"
+                        id="flat-toggle" />
+                     <label for="flat-toggle">
+                        <span class="panel__swatch"></span>
+                        <span>Flat areas only</span>
+                     </label>
+                  </div>
+               </div>
+               <div class="panel__layer">
+                  <div
+                     id="slope-dots-legend"
+                     class="legend"></div>
+                  <div class="panel__option">
+                     <input
+                        type="checkbox"
+                        id="slope-dots-toggle" />
+                     <label for="slope-dots-toggle">
+                        <span class="panel__swatch"></span>
+                        <span>Slope</span>
+                     </label>
+                  </div>
+               </div>
             </div>
-          </div>
-          <div class="panel__layer">
-            <div id="slope-dots-legend" class="legend"></div>
-            <div class="panel__option">
-              <input type="checkbox" id="slope-dots-toggle" />
-              <label for="slope-dots-toggle">
-                <span class="panel__swatch"></span>
-                <span>Slope</span>
-              </label>
-            </div>
-          </div>
-        </div>
-      </section>
-    </aside>
+         </section>
+      </aside>
 
-    <aside id="search-results" class="results" hidden>
-      <div id="search-result-cards" class="results__cards"></div>
-    </aside>
-  </body>
+      <aside
+         id="search-results"
+         class="results"
+         hidden>
+         <div
+            id="search-result-cards"
+            class="results__cards"></div>
+      </aside>
+   </body>
 </html>
