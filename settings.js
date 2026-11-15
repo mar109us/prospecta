@@ -75,7 +75,7 @@ export const SLOPE = {
   dotRadiusDeg: 0.3,
   dotOpacity: 1,
   dotMinOpacity: 0,
-  isDotsOnByDefault: true,
+  isDotsOnByDefault: false,
   flatLimitDeg: 5,
   flatColour: "#41ab5d",
   flatOpacity: 0.45,
@@ -84,4 +84,13 @@ export const SLOPE = {
 
 export const PANEL = {
   openCategories: ["resources"],
+};
+
+export const LANDING = {
+  richTopFraction: 0.1,
+  searchStepDeg: 1,
+  surroundingsRadiusKm: 50,
+  slopePenaltyKmPerDegree: 20,
+  minSeparationKm: 200,
+  resultCount: 5,
 };

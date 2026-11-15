@@ -1,6 +1,7 @@
 import * as THREE from "three";
 import { OrbitControls } from "three/addons/controls/OrbitControls.js";
 import { CAMERA, LIGHTS, MOON } from "../settings.js";
+import { latLonToScenePosition } from "./terrainMath.js";
 
 const MOON_RADIUS = 1;
 
@@ -107,4 +108,11 @@ export function createGlobe(container) {
 
 export function startRenderLoop(globe) {
    globe.renderer.setAnimationLoop(() => renderGlobe(globe));
+}
+
+export function lookAtSpot(globe, lat, lon) {
+   const distance = globe.camera.position.length();
+   const position = latLonToScenePosition(lat, lon, distance);
+   globe.camera.position.set(position.x, position.y, position.z);
+   globe.controls.update();
 }

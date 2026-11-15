@@ -1,4 +1,4 @@
-import { elevationAtVertex, elevationToRadius } from "../view/terrainMath.js";
+import { latLonToScenePosition, elevationAtVertex, elevationToRadius } from "../view/terrainMath.js";
 
 function check(testName, isPassing) {
   if (isPassing) {
@@ -46,3 +46,16 @@ testNorthPoleUsesTopRowAverage();
 testCornerAveragesFourCells();
 testZeroKmKeepsRadius1();
 testTenKmAt10xLiftsAbout58Percent();
+
+function testZeroLatLonFacesPlusX() {
+  const position = latLonToScenePosition(0, 0, 1);
+  check("lat 0, lon 0 points along +x", Math.abs(position.x - 1) < 0.0001 && Math.abs(position.z) < 0.0001);
+}
+
+function testNorthPolePointsUp() {
+  const position = latLonToScenePosition(90, 0, 1);
+  check("north pole points up (+y)", Math.abs(position.y - 1) < 0.0001);
+}
+
+testZeroLatLonFacesPlusX();
+testNorthPolePointsUp();

@@ -30,3 +30,17 @@ export function connectLayerDebug(layer, grid) {
     console.log(`${layer.datasetName} layer visible:`, checkbox.checked);
   });
 }
+
+export function logLandingSpots(spots) {
+  const rows = [];
+  for (const spot of spots) {
+    rows.push({
+      rank: spot.rank,
+      lat: spot.lat,
+      lon: spot.lon,
+      surroundingSlopeDeg: spot.surroundingSlopeDeg,
+      score: spot.score,
+    });
+  }
+  console.table(rows);
+}

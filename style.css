@@ -59,3 +59,85 @@ body {
   margin: 0;
   color: #ff8a80;
 }
+
+.panel__search {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  max-width: 300px;
+}
+
+.panel__button {
+  padding: 6px 10px;
+  color: white;
+  font: inherit;
+  background: #2f6f3e;
+  border: 1px solid #41ab5d;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.panel__status {
+  margin: 0;
+  font-size: 13px;
+}
+
+.results {
+  position: absolute;
+  top: 16px;
+  right: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  width: 260px;
+  max-height: calc(100vh - 32px);
+  padding: 12px;
+  overflow-y: auto;
+  color: white;
+  font-family: system-ui, sans-serif;
+  background: rgba(20, 20, 20, 0.8);
+  border-radius: 8px;
+}
+
+.results__title {
+  margin: 0;
+  font-size: 15px;
+}
+
+.results__cards {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.result-card {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 8px 10px;
+  color: white;
+  font: inherit;
+  font-size: 13px;
+  text-align: left;
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid #555;
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+.result-card:hover {
+  border-color: #41ab5d;
+}
+
+.result-card__rank {
+  font-size: 18px;
+  font-weight: bold;
+}
+
+.result-card__place {
+  font-weight: bold;
+}
+
+.result-card__score {
+  color: #aaa;
+}

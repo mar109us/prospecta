@@ -45,7 +45,18 @@
           </div>
         </div>
       </details>
+      <section class="panel__search">
+        <button type="button" id="search-button" class="panel__button">
+          Find areas
+        </button>
+        <p id="search-status" class="panel__status" aria-live="polite"></p>
+      </section>
       <p id="error" class="panel__error" role="alert" hidden></p>
+    </aside>
+
+    <aside id="search-results" class="results" hidden>
+      <h2 class="results__title">Suitable areas <br>(lower rank is better)</h2>
+      <div id="search-result-cards" class="results__cards"></div>
     </aside>
   </body>
 </html>

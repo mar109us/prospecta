@@ -32,3 +32,19 @@ export function elevationAtVertex(u, v, grid) {
   }
   return total / 4;
 }
+
+export function latLonToScenePosition(lat, lon, radius) {
+  const phi = ((lon + 180) / 360) * 2 * Math.PI;
+  const theta = ((90 - lat) / 180) * Math.PI;
+  return {
+    x: -Math.cos(phi) * Math.sin(theta) * radius,
+    y: Math.cos(theta) * radius,
+    z: Math.sin(phi) * Math.sin(theta) * radius,
+  };
+}
+
+export function elevationAt(grid, lat, lon) {
+  const row = Math.min(Math.floor(((90 - lat) / 180) * grid.height), grid.height - 1);
+  const column = Math.floor(((lon + 180) / 360) * grid.width) % grid.width;
+  return grid.values[row * grid.width + column];
+}
