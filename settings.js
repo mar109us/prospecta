@@ -27,7 +27,7 @@ export const LIGHTS = {
 
 export const TEXTURES = {
   moonColourUrl: "assets/textures/moonColour8k.jpg",
-  normalMapUrl: "assets/textures/moonNormal16.png",
+  normalMapUrl: "assets/textures/moonNormal16.jpg",
 };
 
 export const RESOURCES = {
