@@ -6,9 +6,16 @@ function hexToRgb(hexColour) {
   };
 }
 
-export function valueToAlpha(value, maxValue) {
+function easeIn(t) {
+  return t * t;
+}
+
+export function valueToAlpha(value, minValue, maxValue) {
   if (value === null) return 0;
-  return Math.round((value / maxValue) * 255);
+  if (maxValue === minValue) return 255;
+
+  const t = (value - minValue) / (maxValue - minValue);
+  return Math.round(easeIn(t) * 255);
 }
 
 export function buildOverlayPixels(grid, hexColour) {
@@ -24,7 +31,7 @@ export function buildOverlayPixels(grid, hexColour) {
       pixels[index] = colour.red;
       pixels[index + 1] = colour.green;
       pixels[index + 2] = colour.blue;
-      pixels[index + 3] = valueToAlpha(value, grid.max);
+      pixels[index + 3] = valueToAlpha(value, grid.min, grid.max);
     }
   }
 

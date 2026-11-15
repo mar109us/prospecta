@@ -12,21 +12,34 @@ function makeNorthSouthGrid() {
   return {
     width: 1,
     height: 2,
+    min: 0,
     max: 30,
     values: [30, null],
   };
 }
 
-function testMaxIronIsFullyOpaque() {
-  check("max iron is fully opaque", valueToAlpha(30, 30) === 255);
+function testMinIronIsTransparent() {
+  check("min iron is transparent", valueToAlpha(10, 10, 30) === 0);
 }
 
-function testHalfIronIsHalfOpaque() {
-  check("half iron is half opaque", valueToAlpha(15, 30) === 128);
+function testMaxIronIsFullyOpaque() {
+  check("max iron is fully opaque", valueToAlpha(30, 10, 30) === 255);
+}
+
+function testHalfIronIsEasedDown() {
+  check("half iron is eased down to 25%", valueToAlpha(20, 10, 30) === 64);
+}
+
+function testQuarterIronIsEasedDown() {
+  check("quarter iron is eased down to 6.25%", valueToAlpha(15, 10, 30) === 16);
 }
 
 function testNullIsTransparent() {
-  check("null is transparent", valueToAlpha(null, 30) === 0);
+  check("null is transparent", valueToAlpha(null, 10, 30) === 0);
+}
+
+function testFlatMapIsFullyOpaque() {
+  check("flat map is fully opaque", valueToAlpha(5, 5, 5) === 255);
 }
 
 function testNorthRowEndsAtTopOfTexture() {
@@ -44,8 +57,11 @@ function testPixelsUseLayerColour() {
   );
 }
 
+testMinIronIsTransparent();
 testMaxIronIsFullyOpaque();
-testHalfIronIsHalfOpaque();
+testHalfIronIsEasedDown();
+testQuarterIronIsEasedDown();
 testNullIsTransparent();
+testFlatMapIsFullyOpaque();
 testNorthRowEndsAtTopOfTexture();
 testPixelsUseLayerColour();
