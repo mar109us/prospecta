@@ -1,7 +1,10 @@
 import * as THREE from "three";
 import { buildLayerPixels } from "./overlayPixels.js";
 import { applySlopeShader } from "./slopeShader.js";
-import { SLOPE } from "../settings.js";
+import { toUnitVector } from "../data/geo.js";
+import { FOCUS, LANDING, SLOPE } from "../settings.js";
+
+const MOON_RADIUS_KM = 1737.4;
 
 function createSlopeTexture(grid) {
   grid.displayMin = 0;
@@ -67,6 +70,24 @@ function createSlopeUniforms() {
     dotMinOpacity: {
       value: SLOPE.dotMinOpacity,
     },
+    showFocus: {
+      value: 0,
+    },
+    focusCentre: {
+      value: new THREE.Vector3(1, 0, 0),
+    },
+    focusRadiusAngle: {
+      value: LANDING.flatAreaRadiusKm / MOON_RADIUS_KM,
+    },
+    focusColour: {
+      value: new THREE.Color(FOCUS.colour),
+    },
+    focusFillOpacity: {
+      value: FOCUS.fillOpacity,
+    },
+    focusRingWidthPx: {
+      value: FOCUS.ringWidthPx,
+    },
   };
 }
 
@@ -105,6 +126,7 @@ function updateMeshVisibility(overlay) {
   let isAnyVisible = false;
   if (overlay.uniforms.showFlat.value === 1) isAnyVisible = true;
   if (overlay.uniforms.showDots.value === 1) isAnyVisible = true;
+  if (overlay.uniforms.showFocus.value === 1) isAnyVisible = true;
   overlay.mesh.visible = isAnyVisible;
 }
 
@@ -119,5 +141,18 @@ export function setSlopeDotsVisible(overlay, isVisible) {
   let visibility = 0;
   if (isVisible) visibility = 1;
   overlay.uniforms.showDots.value = visibility;
+  updateMeshVisibility(overlay);
+}
+
+export function setFocus(overlay, spot) {
+  if (!spot) {
+    overlay.uniforms.showFocus.value = 0;
+    updateMeshVisibility(overlay);
+    return;
+  }
+
+  const centre = toUnitVector(spot.lat, spot.lon);
+  overlay.uniforms.focusCentre.value.set(centre.x, centre.y, centre.z);
+  overlay.uniforms.showFocus.value = 1;
   updateMeshVisibility(overlay);
 }

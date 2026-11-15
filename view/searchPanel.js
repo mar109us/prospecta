@@ -1,4 +1,5 @@
 import { capitalise } from "./text.js";
+import { LANDING } from "../settings.js";
 
 const PAINT_DELAY_MS = 20;
 
@@ -28,6 +29,7 @@ function createCard(spot, onSelect) {
     card.appendChild(createLine("result-card__line", `${capitalise(route.name)}: ${Math.round(route.routeKm)} km drive`));
   }
   card.appendChild(createLine("result-card__line", `Surroundings: ${spot.surroundingSlopeDeg.toFixed(1)}° slope`));
+  card.appendChild(createLine("result-card__line", `Flat ground within ${LANDING.flatAreaRadiusKm} km: ${Math.round(spot.flatShare * 100)}%`));
   card.appendChild(createLine("result-card__score", `Score ${Math.round(spot.score)}`));
 
   card.addEventListener("click", () => onSelect(spot));

@@ -1,6 +1,8 @@
 import { toUnitVector } from "../data/geo.js";
 import {
   findLandingSpots,
+  flatAreaPenalty,
+  flatShareAround,
   pickSeparated,
   scoreCandidate,
   surroundingSlope,
@@ -41,6 +43,9 @@ function makeSettings() {
     routeStepDeg: 5,
     maxDriveSlopeDeg: 10,
     slopeCostPerDegree: 0.1,
+    flatAreaRadiusKm: 100,
+    flatAreaPenaltyKm: 150,
+    minFlatShare: 0.7,
     searchStepDeg: 5,
     surroundingsRadiusKm: 50,
     slopePenaltyKmPerDegree: 20,
@@ -106,6 +111,24 @@ function testBestSpotLiesBetweenTwoDeposits() {
   check("best spot lies between two deposits", Math.abs(spots[0].lon) <= 5);
 }
 
+function testFullPlainHasNoFlatPenalty() {
+  check("a full plain has no flat-area penalty", flatAreaPenalty(1, 150) === 0);
+}
+
+function testNoFlatGroundGetsFullPenalty() {
+  check("no flat ground gets the full penalty", flatAreaPenalty(0, 150) === 150);
+}
+
+function testFlatShareCountsFlatCells() {
+  const slopeGrid = makeGrid("slope", 2);
+  setValueAt(slopeGrid, 2.5, 2.5, 20);
+  const share = flatShareAround(slopeGrid, 17, 36, 400, 5);
+  check("flat share counts only flat cells", share > 0 && share < 1);
+}
+
+testFullPlainHasNoFlatPenalty();
+testNoFlatGroundGetsFullPenalty();
+testFlatShareCountsFlatCells();
 testEqualDistancesBeatUnevenOnes();
 testSteepSurroundingsLowerTheRank();
 testUniformSlopeAveragesToItself();

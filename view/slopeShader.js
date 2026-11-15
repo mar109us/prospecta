@@ -13,6 +13,12 @@ uniform float dotRadiusDeg;
 uniform float dotSpacingDeg;
 uniform float dotOpacity;
 uniform float dotMinOpacity;
+uniform float showFocus;
+uniform vec3 focusCentre;
+uniform float focusRadiusAngle;
+uniform vec3 focusColour;
+uniform float focusFillOpacity;
+uniform float focusRingWidthPx;
 `;
 }
 
@@ -51,9 +57,22 @@ const SLOPE_MAP_FRAGMENT = `
   if (dotSlope < slopeThresholds[0]) dotStrength = 0.0;
   dotStrength *= showDots * bandOpacity;
 
+  float latRadians = radians(lat);
+  float lonRadians = radians(lon - 180.0);
+  vec3 direction = vec3(cos(latRadians) * cos(lonRadians), cos(latRadians) * sin(lonRadians), sin(latRadians));
+  float angleToFocus = acos(clamp(dot(direction, focusCentre), -1.0, 1.0));
+  float anglePerPixel = max(fwidth(angleToFocus), 0.000001);
+  float insideFocus = 1.0 - smoothstep(focusRadiusAngle - anglePerPixel, focusRadiusAngle, angleToFocus);
+  float isFlatHere = 1.0 - smoothstep(flatLimitDeg - edgeWidth, flatLimitDeg, slopeDegrees);
+  float ringDistancePx = abs(angleToFocus - focusRadiusAngle) / anglePerPixel;
+  float ring = 1.0 - smoothstep(focusRingWidthPx - 0.5, focusRingWidthPx + 0.5, ringDistancePx);
+  float focusStrength = max(insideFocus * isFlatHere * focusFillOpacity, ring) * showFocus;
+
   float dotShare = dotStrength / max(dotStrength + flatStrength, 0.0001);
-  diffuseColor.rgb *= mix(flatColour, dotColour, dotShare);
-  diffuseColor.a = max(flatStrength, dotStrength);
+  vec3 colour = mix(flatColour, dotColour, dotShare);
+  colour = mix(colour, focusColour, focusStrength);
+  diffuseColor.rgb *= colour;
+  diffuseColor.a = max(max(flatStrength, dotStrength), focusStrength);
 `;
 
 export function applySlopeShader(material, uniforms, thresholdCount) {

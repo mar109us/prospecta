@@ -153,7 +153,7 @@ async function main() {
   connectCategoryToggles(toggles);
   openCategories(PANEL.openCategories);
 
-  connectLandingSearch(globe, loaded);
+  connectLandingSearch(globe, loaded, slopeOverlay);
 
   try {
     const materials = overlayMaterials([resourceOverlay, slopeOverlay]);

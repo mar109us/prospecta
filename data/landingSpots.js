@@ -25,15 +25,14 @@ export function findFlatCandidates(slopeGrid, flatLimitDeg, stepDeg) {
   return candidates;
 }
 
-export function surroundingSlope(slopeGrid, row, column, radiusKm) {
+function slopesWithin(slopeGrid, row, column, radiusKm) {
   const centre = cellCentre(slopeGrid, row, column);
   const centreUnit = toUnitVector(centre.lat, centre.lon);
   const rowReach = Math.ceil(radiusKm / cellSizeKm(slopeGrid));
   const cosLat = Math.max(Math.cos((centre.lat * Math.PI) / 180), 0.05);
   const columnReach = Math.min(Math.ceil(rowReach / cosLat), Math.floor(slopeGrid.width / 2));
 
-  let total = 0;
-  let count = 0;
+  const slopes = [];
   for (let nearRow = row - rowReach; nearRow <= row + rowReach; nearRow++) {
     if (nearRow < 0 || nearRow >= slopeGrid.height) continue;
 
@@ -44,13 +43,36 @@ export function surroundingSlope(slopeGrid, row, column, radiusKm) {
 
       const near = cellCentre(slopeGrid, nearRow, nearColumn);
       if (distanceKm(centreUnit, toUnitVector(near.lat, near.lon)) > radiusKm) continue;
-      total += value;
-      count++;
+      slopes.push(value);
     }
   }
+  return slopes;
+}
 
-  if (count === 0) return null;
-  return total / count;
+export function surroundingSlope(slopeGrid, row, column, radiusKm) {
+  const slopes = slopesWithin(slopeGrid, row, column, radiusKm);
+  if (slopes.length === 0) return null;
+
+  let total = 0;
+  for (const slope of slopes) {
+    total += slope;
+  }
+  return total / slopes.length;
+}
+
+export function flatShareAround(slopeGrid, row, column, radiusKm, flatLimitDeg) {
+  const slopes = slopesWithin(slopeGrid, row, column, radiusKm);
+  if (slopes.length === 0) return 0;
+
+  let flatCount = 0;
+  for (const slope of slopes) {
+    if (slope < flatLimitDeg) flatCount++;
+  }
+  return flatCount / slopes.length;
+}
+
+export function flatAreaPenalty(flatShare, flatAreaPenaltyKm) {
+  return (1 - flatShare) * flatAreaPenaltyKm;
 }
 
 export function scoreCandidate(distancesKm, surroundingSlopeDeg, slopePenaltyKmPerDegree) {
@@ -92,7 +114,7 @@ function driveCostsFor(resources, nodeIndex) {
   return costs;
 }
 
-function scoreAll(candidates, resources, routeGrid, slopeGrid, settings) {
+function scoreAll(candidates, resources, routeGrid, slopeGrid, flatLimitDeg, settings) {
   const scored = [];
   for (const candidate of candidates) {
     const nodeIndex = nodeIndexAt(routeGrid, candidate.lat, candidate.lon);
@@ -102,9 +124,15 @@ function scoreAll(candidates, resources, routeGrid, slopeGrid, settings) {
     const slope = surroundingSlope(slopeGrid, candidate.row, candidate.column, settings.surroundingsRadiusKm);
     if (slope === null) continue;
 
+    const flatShare = flatShareAround(slopeGrid, candidate.row, candidate.column, settings.flatAreaRadiusKm, flatLimitDeg);
+    if (flatShare < settings.minFlatShare) continue;
+
     candidate.nodeIndex = nodeIndex;
     candidate.surroundingSlopeDeg = slope;
-    candidate.score = scoreCandidate(driveCosts, slope, settings.slopePenaltyKmPerDegree);
+    candidate.flatShare = flatShare;
+    candidate.score =
+      scoreCandidate(driveCosts, slope, settings.slopePenaltyKmPerDegree) +
+      flatAreaPenalty(flatShare, settings.flatAreaPenaltyKm);
     scored.push(candidate);
   }
   return scored;
@@ -149,7 +177,7 @@ export function findLandingSpots(input) {
   const routeGrid = buildRouteGrid(input.slopeGrid, settings.routeStepDeg);
   const resources = prepareResources(input.resourceGrids, routeGrid, settings);
   const candidates = findFlatCandidates(input.slopeGrid, input.flatLimitDeg, settings.searchStepDeg);
-  const scored = scoreAll(candidates, resources, routeGrid, input.slopeGrid, settings);
+  const scored = scoreAll(candidates, resources, routeGrid, input.slopeGrid, input.flatLimitDeg, settings);
 
   scored.sort((a, b) => a.score - b.score);
   const best = pickSeparated(scored, settings.resultCount, settings.minSeparationKm);
@@ -163,6 +191,7 @@ export function findLandingSpots(input) {
       lon: spot.lon,
       routes: describeRoutes(resources, routeGrid, spot.nodeIndex),
       surroundingSlopeDeg: spot.surroundingSlopeDeg,
+      flatShare: spot.flatShare,
       score: spot.score,
     });
   }

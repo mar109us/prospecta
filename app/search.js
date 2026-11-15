@@ -4,6 +4,7 @@ import { createMarkerGroup, showMarkers, updateMarkerVisibility } from "../view/
 import { createRouteGroups, showRoutes, updateRoutes } from "../view/routes.js";
 import { connectSearchPanel } from "../view/searchPanel.js";
 import { connectMarkerPicking } from "../view/markerPicking.js";
+import { setFocus } from "../view/slopeOverlay.js";
 import { logLandingSpots } from "../debug/logState.js";
 import { DEBUG, LANDING, MOON, RESOURCES, SLOPE } from "../settings.js";
 
@@ -24,6 +25,7 @@ function tickedResources(loaded) {
 function selectSpot(search, spot) {
   flyToSpot(search.globe, spot.lat, spot.lon);
   showRoutes(search.routeGroups, spot, RESOURCES.layers, search.loaded.elevation, MOON.heightExaggeration);
+  if (search.slopeOverlay) setFocus(search.slopeOverlay, spot);
 }
 
 function runSearch(search) {
@@ -48,13 +50,14 @@ function runSearch(search) {
     settings: LANDING,
   });
   showMarkers(search.markerGroup, spots, search.loaded.elevation, MOON.heightExaggeration);
+  if (search.slopeOverlay) setFocus(search.slopeOverlay, null);
   if (LANDING.isFlyToBestOnSearch && spots.length > 0) selectSpot(search, spots[0]);
   if (DEBUG.isEnabled) logLandingSpots(spots);
 
   if (spots.length === 0) {
     return {
       spots: spots,
-      message: `No flat area can reach all ticked resources within ${LANDING.maxDriveSlopeDeg}° slopes.`,
+      message: `No area with at least ${Math.round(LANDING.minFlatShare * 100)}% flat ground can reach all ticked resources within ${LANDING.maxDriveSlopeDeg}° slopes.`,
     };
   }
   return {
@@ -63,10 +66,11 @@ function runSearch(search) {
   };
 }
 
-export function connectLandingSearch(globe, loaded) {
+export function connectLandingSearch(globe, loaded, slopeOverlay) {
   const search = {
     globe: globe,
     loaded: loaded,
+    slopeOverlay: slopeOverlay,
     markerGroup: createMarkerGroup(globe),
     routeGroups: createRouteGroups(globe),
   };

@@ -156,16 +156,25 @@ export const LANDING = {
   searchStepDeg: 1,
   surroundingsRadiusKm: 50,
   slopePenaltyKmPerDegree: 20,
-  minSeparationKm: 500,
-  resultCount: 10,
+  minSeparationKm: 1000,
+  resultCount: 5,
   isFlyToBestOnSearch: true,
   routeStepDeg: 1,
   maxDriveSlopeDeg: 10,
   slopeCostPerDegree: 0.1,
+  flatAreaRadiusKm: 100,
+  flatAreaPenaltyKm: 150,
+  minFlatShare: 0.7,
 };
 
 export const ROUTES = {
   lineWidthPx: 10,
   liftAboveGround: 0.002,
   curvePointsPerStep: 6,
+};
+
+export const FOCUS = {
+  colour: "#ffffff",
+  fillOpacity: 0.35,
+  ringWidthPx: 1.5,
 };
