@@ -1,15 +1,11 @@
 import * as THREE from "three";
 import { buildLayerPixels } from "./overlayPixels.js";
 import { applySlopeShader } from "./slopeShader.js";
-
-const MAX_SLOPE_DEGREES = 45;
-const SLOPE_OPACITY = 0.7;
-const SLOPE_THRESHOLDS = [1, 5, 10, 15];
-const SLOPE_COLOURS = ["#2E9E44", "#9ACD32", "#F2D530", "#F28C28", "#D7301F"];
+import { SLOPE } from "../settings.js";
 
 function createSlopeTexture(grid) {
   grid.displayMin = 0;
-  grid.displayMax = MAX_SLOPE_DEGREES;
+  grid.displayMax = SLOPE.maxDegrees;
   const pixels = buildLayerPixels([grid]);
   const texture = new THREE.DataTexture(
     pixels,
@@ -27,7 +23,7 @@ function createSlopeTexture(grid) {
 
 function createSlopeColours() {
   const colours = [];
-  for (const hexColour of SLOPE_COLOURS) {
+  for (const hexColour of SLOPE.colours) {
     colours.push(new THREE.Color(hexColour));
   }
   return colours;
@@ -36,38 +32,66 @@ function createSlopeColours() {
 function createSlopeUniforms() {
   return {
     maxSlope: {
-      value: MAX_SLOPE_DEGREES,
+      value: SLOPE.maxDegrees,
     },
     slopeThresholds: {
-      value: new THREE.Vector4(
-        SLOPE_THRESHOLDS[0],
-        SLOPE_THRESHOLDS[1],
-        SLOPE_THRESHOLDS[2],
-        SLOPE_THRESHOLDS[3],
-      ),
+      value: SLOPE.thresholds,
     },
     slopeColours: {
       value: createSlopeColours(),
+    },
+    showFlat: {
+      value: 0,
+    },
+    showDots: {
+      value: 0,
+    },
+    flatLimitDeg: {
+      value: SLOPE.flatLimitDeg,
+    },
+    flatColour: {
+      value: new THREE.Color(SLOPE.flatColour),
+    },
+    flatOpacity: {
+      value: SLOPE.flatOpacity,
+    },
+    dotRadiusDeg: {
+      value: SLOPE.dotRadiusDeg,
+    },
+    dotSpacingDeg: {
+      value: SLOPE.dotSpacingDeg,
+    },
+    dotOpacity: {
+      value: SLOPE.dotOpacity,
+    },
+    dotMinOpacity: {
+      value: SLOPE.dotMinOpacity,
     },
   };
 }
 
 export function createSlopeOverlay(globe, grid) {
+  if (SLOPE.colours.length !== SLOPE.thresholds.length + 1) {
+    throw new Error(
+      `SLOPE in settings.js has ${SLOPE.thresholds.length} thresholds, so it needs ${SLOPE.thresholds.length + 1} colours, but has ${SLOPE.colours.length}.`,
+    );
+  }
+
   const uniforms = createSlopeUniforms();
   const material = new THREE.MeshStandardMaterial({
     map: createSlopeTexture(grid),
     roughness: 1,
     transparent: true,
-    opacity: SLOPE_OPACITY,
     depthWrite: false,
     polygonOffset: true,
     polygonOffsetFactor: -2,
     polygonOffsetUnits: -2,
   });
-  applySlopeShader(material, uniforms);
+  applySlopeShader(material, uniforms, SLOPE.thresholds.length);
 
   const mesh = new THREE.Mesh(globe.moon.geometry, material);
   mesh.visible = false;
+  mesh.renderOrder = 1;
   globe.scene.add(mesh);
 
   return {
@@ -76,6 +100,23 @@ export function createSlopeOverlay(globe, grid) {
   };
 }
 
-export function setSlopeVisible(overlay, isVisible) {
-  overlay.mesh.visible = isVisible;
+function updateMeshVisibility(overlay) {
+  let isAnyVisible = false;
+  if (overlay.uniforms.showFlat.value === 1) isAnyVisible = true;
+  if (overlay.uniforms.showDots.value === 1) isAnyVisible = true;
+  overlay.mesh.visible = isAnyVisible;
+}
+
+export function setFlatVisible(overlay, isVisible) {
+  let visibility = 0;
+  if (isVisible) visibility = 1;
+  overlay.uniforms.showFlat.value = visibility;
+  updateMeshVisibility(overlay);
+}
+
+export function setSlopeDotsVisible(overlay, isVisible) {
+  let visibility = 0;
+  if (isVisible) visibility = 1;
+  overlay.uniforms.showDots.value = visibility;
+  updateMeshVisibility(overlay);
 }

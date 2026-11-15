@@ -1,35 +1,38 @@
 import { loadDataset } from "./data/datasetLoader.js";
-import { createGlobe, HEIGHT_EXAGGERATION, startRenderLoop } from "./view/globe.js";
+import { createGlobe, startRenderLoop } from "./view/globe.js";
 import { createOverlay, setLayerVisible } from "./view/overlay.js";
 import { applyElevation } from "./view/terrain.js";
 import { applyMoonTexture, applyNormalMap } from "./view/moonTexture.js";
-import { createSlopeOverlay, setSlopeVisible } from "./view/slopeOverlay.js";
-import { connectCategoryToggles, createToggle } from "./view/layerToggles.js";
+import {
+  createSlopeOverlay,
+  setFlatVisible,
+  setSlopeDotsVisible,
+} from "./view/slopeOverlay.js";
+import {
+  applyDefaultToggles,
+  connectCategoryToggles,
+  createToggle,
+  openCategories,
+} from "./view/layerToggles.js";
 import { connectDebug, connectLayerDebug } from "./debug/logState.js";
+import { DEBUG, MOON, PANEL, RESOURCES, SLOPE, TEXTURES } from "./settings.js";
 
-const IS_DEBUG = false;
-const MOON_TEXTURE_URL = "assets/textures/moonColour8k.jpg";
-const NORMAL_MAP_URL = "assets/textures/moonNormal16.png";
+const RESOURCE_LAYERS = RESOURCES.layers;
 
-const RESOURCE_LAYERS = [
-  {
-    datasetName: "iron",
-    colour: "#B7410E",
-    toggleId: "iron-toggle",
-    category: "resources",
-  },
-  {
-    datasetName: "silicon",
-    colour: "#2F7FD8",
-    toggleId: "silicon-toggle",
-    category: "resources",
-  },
-];
+const SLOPE_DATASET = "slope";
 
-const SLOPE_LAYER = {
-  datasetName: "slope",
-  toggleId: "slope-toggle",
+const FLAT_LAYER = {
+  toggleId: "flat-toggle",
   category: "terrain",
+  isFill: false,
+  isOnByDefault: SLOPE.isFlatOnByDefault,
+};
+
+const SLOPE_DOTS_LAYER = {
+  toggleId: "slope-dots-toggle",
+  category: "terrain",
+  isFill: false,
+  isOnByDefault: SLOPE.isDotsOnByDefault,
 };
 
 function showError(message) {
@@ -43,14 +46,14 @@ async function loadGrids(layers) {
   for (const layer of layers) {
     const grid = await loadDataset(layer.datasetName);
     grids.push(grid);
-    if (IS_DEBUG) connectLayerDebug(layer, grid);
+    if (DEBUG.isEnabled) connectLayerDebug(layer, grid);
   }
   return grids;
 }
 
 async function addTerrain(globe) {
   const elevation = await loadDataset("elevation");
-  applyElevation(globe.moon.geometry, elevation, HEIGHT_EXAGGERATION);
+  applyElevation(globe.moon.geometry, elevation, MOON.heightExaggeration);
 }
 
 async function addResourceLayers(globe) {
@@ -59,7 +62,7 @@ async function addResourceLayers(globe) {
 }
 
 async function addSlopeLayer(globe) {
-  const grid = await loadDataset(SLOPE_LAYER.datasetName);
+  const grid = await loadDataset(SLOPE_DATASET);
   return createSlopeOverlay(globe, grid);
 }
 
@@ -72,8 +75,10 @@ function buildToggles(resourceOverlay, slopeOverlay) {
     }
   }
   if (slopeOverlay) {
-    const setVisible = (isVisible) => setSlopeVisible(slopeOverlay, isVisible);
-    toggles.push(createToggle(SLOPE_LAYER, setVisible));
+    const setFlatOnlyVisible = (isVisible) => setFlatVisible(slopeOverlay, isVisible);
+    const setDotsVisible = (isVisible) => setSlopeDotsVisible(slopeOverlay, isVisible);
+    toggles.push(createToggle(FLAT_LAYER, setFlatOnlyVisible));
+    toggles.push(createToggle(SLOPE_DOTS_LAYER, setDotsVisible));
   }
   return toggles;
 }
@@ -94,14 +99,14 @@ async function main() {
   }
 
   const globe = createGlobe(container);
-  if (IS_DEBUG) connectDebug(globe);
+  if (DEBUG.isEnabled) connectDebug(globe);
   startRenderLoop(globe);
 
   try {
-    await applyMoonTexture(globe, MOON_TEXTURE_URL);
+    await applyMoonTexture(globe, TEXTURES.moonColourUrl);
   } catch (error) {
     console.error(error);
-    showError(`The Moon texture could not be loaded from ${MOON_TEXTURE_URL}.`);
+    showError(`The Moon texture could not be loaded from ${TEXTURES.moonColourUrl}.`);
   }
 
   try {
@@ -127,14 +132,17 @@ async function main() {
     showError(`The slope layer could not be shown. ${error.message}`);
   }
 
-  connectCategoryToggles(buildToggles(resourceOverlay, slopeOverlay));
+  const toggles = buildToggles(resourceOverlay, slopeOverlay);
+  applyDefaultToggles(toggles);
+  connectCategoryToggles(toggles);
+  openCategories(PANEL.openCategories);
 
   try {
     const materials = overlayMaterials([resourceOverlay, slopeOverlay]);
-    await applyNormalMap(globe, materials, NORMAL_MAP_URL, HEIGHT_EXAGGERATION);
+    await applyNormalMap(globe, materials, TEXTURES.normalMapUrl, MOON.heightExaggeration);
   } catch (error) {
     console.error(error);
-    showError(`The normal map could not be loaded from ${NORMAL_MAP_URL}.`);
+    showError(`The normal map could not be loaded from ${TEXTURES.normalMapUrl}.`);
   }
 }
 

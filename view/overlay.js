@@ -1,9 +1,9 @@
 import * as THREE from "three";
 import { buildLayerPixels, MAX_LAYERS } from "./overlayPixels.js";
 import { applyLayerShader } from "./layerShader.js";
-import { BAND_COUNT, curvePower, noiseRatio } from "./layerBands.js";
+import { curvePower, noiseRatio } from "./layerBands.js";
+import { RESOURCE_BANDS, RESOURCES } from "../settings.js";
 
-const OVERLAY_OPACITY = 0.4;
 
 function createLayerTexture(grids) {
   const pixels = buildLayerPixels(grids);
@@ -44,7 +44,7 @@ function createCurvePowers(grids) {
 function createLayerUniforms(layers, grids) {
   return {
     bandCount: {
-      value: BAND_COUNT,
+      value: RESOURCE_BANDS.bandCount,
     },
     layerCurvePowers: {
       value: createCurvePowers(grids),
@@ -64,7 +64,7 @@ export function createOverlay(globe, layers, grids) {
     map: createLayerTexture(grids),
     roughness: 1,
     transparent: true,
-    opacity: OVERLAY_OPACITY,
+    opacity: RESOURCES.opacity,
     depthWrite: false,
     polygonOffset: true,
     polygonOffsetFactor: -1,
