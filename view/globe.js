@@ -1,6 +1,6 @@
 import * as THREE from "three";
 import { OrbitControls } from "three/addons/controls/OrbitControls.js";
-import { CAMERA, LIGHTS, MOON } from "../settings.js";
+import { CAMERA, LIGHTS, MOON, RENDER } from "../settings.js";
 import { latLonToScenePosition } from "./terrainMath.js";
 import { easeInOut, slerpDirection } from "./cameraMath.js";
 
@@ -26,7 +26,7 @@ function createRenderer(container) {
    const renderer = new THREE.WebGLRenderer({
       antialias: true,
    });
-   renderer.setPixelRatio(window.devicePixelRatio);
+   renderer.setPixelRatio(Math.min(window.devicePixelRatio, RENDER.maxPixelRatio));
    renderer.setSize(window.innerWidth, window.innerHeight);
    container.appendChild(renderer.domElement);
    return renderer;

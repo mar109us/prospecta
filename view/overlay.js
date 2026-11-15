@@ -1,5 +1,5 @@
 import * as THREE from "three";
-import { fadeInLatLimit, fadeLatLimit, fillChannel, MAX_LAYERS, NO_FADE_LIMIT_DEG } from "./overlayPixels.js";
+import { fadeInLatLimit, fadeLatLimit, fillChannel, isChunkNeeded, MAX_LAYERS, NO_FADE_LIMIT_DEG } from "./overlayPixels.js";
 import { applyLayerShader } from "./layerShader.js";
 import { curvePower, noiseRatio } from "./layerBands.js";
 import { RESOURCE_BANDS, RESOURCES } from "../settings.js";
@@ -78,6 +78,7 @@ function createChunk(globe, layers) {
   applyLayerShader(material, uniforms);
 
   const mesh = new THREE.Mesh(globe.moon.geometry, material);
+  mesh.visible = false;
   globe.scene.add(mesh);
 
   return {
@@ -85,7 +86,13 @@ function createChunk(globe, layers) {
     pixels: pixels,
     texture: texture,
     uniforms: uniforms,
+    visibleFlags: [false, false, false, false],
+    loadedFlags: [false, false, false, false],
   };
+}
+
+function updateChunkVisibility(chunk) {
+  chunk.mesh.visible = isChunkNeeded(chunk.visibleFlags, chunk.loadedFlags);
 }
 
 export function createOverlay(globe, layers) {
@@ -108,7 +115,10 @@ export function setLayerVisible(overlay, index, isVisible) {
   let visibility = 0;
   if (isVisible) visibility = 1;
   const chunk = overlay.chunks[Math.floor(index / MAX_LAYERS)];
-  chunk.uniforms.layerVisible.value.setComponent(index % MAX_LAYERS, visibility);
+  const channel = index % MAX_LAYERS;
+  chunk.uniforms.layerVisible.value.setComponent(channel, visibility);
+  chunk.visibleFlags[channel] = isVisible;
+  updateChunkVisibility(chunk);
 }
 
 export function addLayerGrid(overlay, index, grid, hasEdgeFade) {
@@ -122,4 +132,18 @@ export function addLayerGrid(overlay, index, grid, hasEdgeFade) {
   chunk.uniforms.layerCurvePowers.value.setComponent(channel, curvePower(noiseRatio(grid)));
   chunk.uniforms.layerLatLimits.value.setComponent(channel, fadeLatLimit(grid, hasEdgeFade));
   chunk.uniforms.layerInnerLatLimits.value.setComponent(channel, fadeInLatLimit(grid));
+  chunk.loadedFlags[channel] = true;
+  updateChunkVisibility(chunk);
+}
+
+export function precompileMeshes(globe, meshes) {
+  const wasVisible = [];
+  for (const mesh of meshes) {
+    wasVisible.push(mesh.visible);
+    mesh.visible = true;
+  }
+  globe.renderer.compile(globe.scene, globe.camera);
+  for (let index = 0; index < meshes.length; index++) {
+    meshes[index].visible = wasVisible[index];
+  }
 }

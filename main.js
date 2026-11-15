@@ -16,6 +16,7 @@ import {
 import { buildResourceOptions, colourToggleRow } from "./view/resourcePanel.js";
 import { drawFlatLegend, drawSlopeLegend } from "./view/legend.js";
 import { createResourceLayers, resourceToggles } from "./app/resourceLayers.js";
+import { precompileMeshes } from "./view/overlay.js";
 import { connectLandingSearch } from "./app/search.js";
 import { createSunlightLayer, sunlightToggle } from "./app/sunlightLayer.js";
 import { connectDebug } from "./debug/logState.js";
@@ -70,13 +71,21 @@ function buildToggles(resources, slopeOverlay, sunlight) {
   return toggles;
 }
 
-function overlayMaterials(overlays) {
-  const materials = [];
+function overlayMeshes(overlays) {
+  const meshes = [];
   for (const overlay of overlays) {
     if (!overlay) continue;
     for (const mesh of overlay.meshes) {
-      materials.push(mesh.material);
+      meshes.push(mesh);
     }
+  }
+  return meshes;
+}
+
+function overlayMaterials(overlays) {
+  const materials = [];
+  for (const mesh of overlayMeshes(overlays)) {
+    materials.push(mesh.material);
   }
   return materials;
 }
@@ -149,17 +158,19 @@ async function main() {
 
   connectLandingSearch(globe, loaded, slopeOverlay);
 
+  let resourceOverlay = null;
+  if (resources) resourceOverlay = resources.overlay;
+  let sunlightOverlay = null;
+  if (sunlight) sunlightOverlay = sunlight.overlay;
+  const overlays = [resourceOverlay, slopeOverlay, sunlightOverlay];
+
   try {
-    let resourceOverlay = null;
-    if (resources) resourceOverlay = resources.overlay;
-    let sunlightOverlay = null;
-    if (sunlight) sunlightOverlay = sunlight.overlay;
-    const materials = overlayMaterials([resourceOverlay, slopeOverlay, sunlightOverlay]);
-    await applyNormalMap(globe, materials, TEXTURES.normalMapUrl, MOON.heightExaggeration);
+    await applyNormalMap(globe, overlayMaterials(overlays), TEXTURES.normalMapUrl, MOON.heightExaggeration);
   } catch (error) {
     console.error(error);
     showError(`The normal map could not be loaded from ${TEXTURES.normalMapUrl}.`);
   }
+  precompileMeshes(globe, overlayMeshes(overlays));
 }
 
 main();

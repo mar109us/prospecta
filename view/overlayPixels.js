@@ -56,6 +56,13 @@ function rowHasData(grid, row) {
   return false;
 }
 
+export function isChunkNeeded(visibleFlags, loadedFlags) {
+  for (let channel = 0; channel < visibleFlags.length; channel++) {
+    if (visibleFlags[channel] && loadedFlags[channel]) return true;
+  }
+  return false;
+}
+
 export const NO_FADE_LIMIT_DEG = 1000;
 
 export function fadeLatLimit(grid, hasEdgeFade) {

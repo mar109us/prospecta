@@ -2,6 +2,10 @@ export const DEBUG = {
   isEnabled: false,
 };
 
+export const RENDER = {
+  maxPixelRatio: 1.5,
+};
+
 export const CAMERA = {
   fov: 5,
   startDistance: 24,

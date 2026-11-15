@@ -4,6 +4,7 @@ import {
   fadeInLatLimit,
   fadeLatLimit,
   fillChannel,
+  isChunkNeeded,
   NO_FADE_LIMIT_DEG,
   valueToByte,
 } from "../view/overlayPixels.js";
@@ -169,3 +170,19 @@ function testMapAcrossTheEquatorHasNoFadeIn() {
 
 testPolarCapFadesInFromItsInnerEdge();
 testMapAcrossTheEquatorHasNoFadeIn();
+
+function testNothingTickedHidesTheMesh() {
+  check("nothing ticked means the mesh is hidden", !isChunkNeeded([false, false, false, false], [true, true, false, false]));
+}
+
+function testTickedButNotLoadedIsHidden() {
+  check("ticked but not loaded is hidden", !isChunkNeeded([true, false, false, false], [false, true, false, false]));
+}
+
+function testTickedAndLoadedIsDrawn() {
+  check("ticked and loaded is drawn", isChunkNeeded([false, false, true, false], [false, false, true, false]));
+}
+
+testNothingTickedHidesTheMesh();
+testTickedButNotLoadedIsHidden();
+testTickedAndLoadedIsDrawn();
