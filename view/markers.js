@@ -36,6 +36,7 @@ function createMarker(spot, elevation, exaggeration) {
   const marker = new THREE.Sprite(material);
   marker.scale.set(MARKER_SIZE, MARKER_SIZE, 1);
   marker.renderOrder = 2;
+  marker.userData.spot = spot;
 
   let radius = 1;
   if (elevation) radius = elevationToRadius(elevationAt(elevation, spot.lat, spot.lon), exaggeration);

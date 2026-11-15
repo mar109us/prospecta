@@ -3,6 +3,7 @@ import { flyToSpot } from "../view/globe.js";
 import { createMarkerGroup, showMarkers, updateMarkerVisibility } from "../view/markers.js";
 import { createRouteGroups, showRoutes, updateRoutes } from "../view/routes.js";
 import { connectSearchPanel } from "../view/searchPanel.js";
+import { connectMarkerPicking } from "../view/markerPicking.js";
 import { logLandingSpots } from "../debug/logState.js";
 import { DEBUG, LANDING, MOON, RESOURCES, SLOPE } from "../settings.js";
 
@@ -76,4 +77,5 @@ export function connectLandingSearch(globe, loaded) {
     () => runSearch(search),
     (spot) => selectSpot(search, spot),
   );
+  connectMarkerPicking(globe, search.markerGroup, (spot) => selectSpot(search, spot));
 }
