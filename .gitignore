@@ -2,7 +2,3 @@ tools/convert/raw/
 .DS_Store
 __pycache__/
 /plan
-.git
-tests
-tools
-debug

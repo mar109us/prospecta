@@ -1,0 +1,10 @@
+.git
+.gitignore
+.dockerignore
+.DS_Store
+__pycache__
+tools
+tests
+plan
+Dockerfile
+docker-compose.yml
