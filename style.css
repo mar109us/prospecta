@@ -31,13 +31,21 @@ body {
   border-radius: 8px;
 }
 
-.panel__layers {
+.panel__category {
+  padding: 6px 8px;
+  border: 1px solid #555;
+  border-radius: 4px;
+}
+
+.panel__category summary {
+  cursor: pointer;
+}
+
+.panel__options {
   display: flex;
   flex-direction: column;
   gap: 4px;
-  margin: 0;
-  border: 1px solid #555;
-  border-radius: 4px;
+  margin-top: 6px;
 }
 
 .panel__option {

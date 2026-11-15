@@ -24,10 +24,12 @@ export async function applyMoonTexture(globe, url) {
   material.needsUpdate = true;
 }
 
-export async function applyNormalMap(globe, overlay, url, exaggeration) {
+export async function applyNormalMap(globe, extraMaterials, url, exaggeration) {
   const texture = await loadTexture(globe, url, THREE.NoColorSpace);
   const strength = exaggeration / NORMAL_MAP_BAKED_STRENGTH;
 
   setNormalMap(globe.moon.material, texture, strength);
-  if (overlay) setNormalMap(overlay.mesh.material, texture, strength);
+  for (const material of extraMaterials) {
+    setNormalMap(material, texture, strength);
+  }
 }

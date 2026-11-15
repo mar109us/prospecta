@@ -19,17 +19,28 @@
     <main id="globe" class="globe"></main>
 
     <aside class="panel">
-      <fieldset class="panel__layers">
-        <legend>Layers</legend>
-        <div class="panel__option">
-          <input type="checkbox" id="iron-toggle" checked />
-          <label for="iron-toggle">Iron (FeO)</label>
+      <details class="panel__category" open>
+        <summary>Resources</summary>
+        <div class="panel__options">
+          <div class="panel__option">
+            <input type="checkbox" id="iron-toggle" checked />
+            <label for="iron-toggle">Iron (FeO)</label>
+          </div>
+          <div class="panel__option">
+            <input type="checkbox" id="silicon-toggle" checked />
+            <label for="silicon-toggle">Silicon (SiO₂)</label>
+          </div>
         </div>
-        <div class="panel__option">
-          <input type="checkbox" id="silicon-toggle" checked />
-          <label for="silicon-toggle">Silicon (SiO₂)</label>
+      </details>
+      <details class="panel__category">
+        <summary>Terrain</summary>
+        <div class="panel__options">
+          <div class="panel__option">
+            <input type="checkbox" id="slope-toggle" />
+            <label for="slope-toggle">Slope (degrees)</label>
+          </div>
         </div>
-      </fieldset>
+      </details>
       <p id="error" class="panel__error" role="alert" hidden></p>
     </aside>
   </body>

@@ -3,24 +3,34 @@ import { createGlobe, HEIGHT_EXAGGERATION, startRenderLoop } from "./view/globe.
 import { createOverlay, setLayerVisible } from "./view/overlay.js";
 import { applyElevation } from "./view/terrain.js";
 import { applyMoonTexture, applyNormalMap } from "./view/moonTexture.js";
+import { createSlopeOverlay, setSlopeVisible } from "./view/slopeOverlay.js";
+import { connectCategoryToggles, createToggle } from "./view/layerToggles.js";
 import { connectDebug, connectLayerDebug } from "./debug/logState.js";
 
 const IS_DEBUG = false;
 const MOON_TEXTURE_URL = "assets/textures/moonColour8k.jpg";
 const NORMAL_MAP_URL = "assets/textures/moonNormal16.png";
 
-const LAYERS = [
+const RESOURCE_LAYERS = [
   {
     datasetName: "iron",
     colour: "#B7410E",
     toggleId: "iron-toggle",
+    category: "resources",
   },
   {
     datasetName: "silicon",
     colour: "#2F7FD8",
     toggleId: "silicon-toggle",
+    category: "resources",
   },
 ];
+
+const SLOPE_LAYER = {
+  datasetName: "slope",
+  toggleId: "slope-toggle",
+  category: "terrain",
+};
 
 function showError(message) {
   const errorElement = document.getElementById("error");
@@ -38,25 +48,42 @@ async function loadGrids(layers) {
   return grids;
 }
 
-function connectToggles(layers, overlay) {
-  for (let index = 0; index < layers.length; index++) {
-    const checkbox = document.getElementById(layers[index].toggleId);
-    checkbox.addEventListener("change", () => {
-      setLayerVisible(overlay, index, checkbox.checked);
-    });
-  }
-}
-
 async function addTerrain(globe) {
   const elevation = await loadDataset("elevation");
   applyElevation(globe.moon.geometry, elevation, HEIGHT_EXAGGERATION);
 }
 
 async function addResourceLayers(globe) {
-  const grids = await loadGrids(LAYERS);
-  const overlay = createOverlay(globe, LAYERS, grids);
-  connectToggles(LAYERS, overlay);
-  return overlay;
+  const grids = await loadGrids(RESOURCE_LAYERS);
+  return createOverlay(globe, RESOURCE_LAYERS, grids);
+}
+
+async function addSlopeLayer(globe) {
+  const grid = await loadDataset(SLOPE_LAYER.datasetName);
+  return createSlopeOverlay(globe, grid);
+}
+
+function buildToggles(resourceOverlay, slopeOverlay) {
+  const toggles = [];
+  if (resourceOverlay) {
+    for (let index = 0; index < RESOURCE_LAYERS.length; index++) {
+      const setVisible = (isVisible) => setLayerVisible(resourceOverlay, index, isVisible);
+      toggles.push(createToggle(RESOURCE_LAYERS[index], setVisible));
+    }
+  }
+  if (slopeOverlay) {
+    const setVisible = (isVisible) => setSlopeVisible(slopeOverlay, isVisible);
+    toggles.push(createToggle(SLOPE_LAYER, setVisible));
+  }
+  return toggles;
+}
+
+function overlayMaterials(overlays) {
+  const materials = [];
+  for (const overlay of overlays) {
+    if (overlay) materials.push(overlay.mesh.material);
+  }
+  return materials;
 }
 
 async function main() {
@@ -84,16 +111,27 @@ async function main() {
     showError(`The terrain could not be shown. ${error.message}`);
   }
 
-  let overlay = null;
+  let resourceOverlay = null;
   try {
-    overlay = await addResourceLayers(globe);
+    resourceOverlay = await addResourceLayers(globe);
   } catch (error) {
     console.error(error);
     showError(`The resource layers could not be shown. ${error.message}`);
   }
 
+  let slopeOverlay = null;
   try {
-    await applyNormalMap(globe, overlay, NORMAL_MAP_URL, HEIGHT_EXAGGERATION);
+    slopeOverlay = await addSlopeLayer(globe);
+  } catch (error) {
+    console.error(error);
+    showError(`The slope layer could not be shown. ${error.message}`);
+  }
+
+  connectCategoryToggles(buildToggles(resourceOverlay, slopeOverlay));
+
+  try {
+    const materials = overlayMaterials([resourceOverlay, slopeOverlay]);
+    await applyNormalMap(globe, materials, NORMAL_MAP_URL, HEIGHT_EXAGGERATION);
   } catch (error) {
     console.error(error);
     showError(`The normal map could not be loaded from ${NORMAL_MAP_URL}.`);
