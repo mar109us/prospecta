@@ -3,6 +3,8 @@ import { buildLayerPixels, MAX_LAYERS } from "./overlayPixels.js";
 import { applyLayerShader } from "./layerShader.js";
 import { BAND_COUNT, curvePower, noiseRatio } from "./layerBands.js";
 
+const OVERLAY_OPACITY = 0.4;
+
 function createLayerTexture(grids) {
   const pixels = buildLayerPixels(grids);
   const texture = new THREE.DataTexture(
@@ -62,6 +64,7 @@ export function createOverlay(globe, layers, grids) {
     map: createLayerTexture(grids),
     roughness: 1,
     transparent: true,
+    opacity: OVERLAY_OPACITY,
     depthWrite: false,
     polygonOffset: true,
     polygonOffsetFactor: -1,

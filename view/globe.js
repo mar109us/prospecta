@@ -5,7 +5,7 @@ const MOON_RADIUS = 1;
 const CAMERA_DISTANCE = 3;
 const MOON_WIDTH_SEGMENTS = 720;
 const MOON_HEIGHT_SEGMENTS = 360;
-export const HEIGHT_EXAGGERATION = 7;
+export const HEIGHT_EXAGGERATION = 3;
 
 function createScene() {
    const scene = new THREE.Scene();

@@ -20,13 +20,13 @@ ELEVATION = {
 }
 
 
-def read_lola(path):
+def read_lola(path, height, width):
     raw = np.fromfile(path, dtype="<i2")
-    if raw.size != LOLA_HEIGHT * LOLA_WIDTH:
+    if raw.size != height * width:
         raise SystemExit(
-            f"{path.name} has {raw.size} values, expected {LOLA_HEIGHT * LOLA_WIDTH}."
+            f"{path.name} has {raw.size} values, expected {height * width}."
         )
-    return raw.reshape(LOLA_HEIGHT, LOLA_WIDTH)
+    return raw.reshape(height, width)
 
 
 def units_to_km(raw):
@@ -52,7 +52,7 @@ def print_summary(grid):
 
 def main():
     download_file(LOLA_URL, LOLA_PATH)
-    elevation = units_to_km(read_lola(LOLA_PATH))
+    elevation = units_to_km(read_lola(LOLA_PATH, LOLA_HEIGHT, LOLA_WIDTH))
     elevation = start_at_180_west(elevation)
     grid = average_blocks(elevation, LOLA_WIDTH // WIDTH)
     if grid.shape != (HEIGHT, WIDTH):
