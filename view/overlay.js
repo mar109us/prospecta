@@ -1,5 +1,8 @@
 import * as THREE from "three";
 import { buildOverlayPixels } from "./overlayPixels.js";
+import { applySteppedOpacity } from "./steppedOpacityShader.js";
+
+const STEP_COUNT = 5;
 
 function createOverlayTexture(grid, hexColour) {
   const pixels = buildOverlayPixels(grid, hexColour);
@@ -27,6 +30,7 @@ export function createOverlay(globe, grid, hexColour) {
     polygonOffsetFactor: -1,
     polygonOffsetUnits: -1,
   });
+  applySteppedOpacity(material, STEP_COUNT);
   const overlay = new THREE.Mesh(globe.moon.geometry, material);
   globe.scene.add(overlay);
   return overlay;

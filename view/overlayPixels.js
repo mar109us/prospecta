@@ -6,16 +6,12 @@ function hexToRgb(hexColour) {
   };
 }
 
-function easeIn(t) {
-  return t * t;
-}
-
 export function valueToAlpha(value, minValue, maxValue) {
   if (value === null) return 0;
   if (maxValue === minValue) return 255;
 
   const t = (value - minValue) / (maxValue - minValue);
-  return Math.round(easeIn(t) * 255);
+  return Math.round(t * 255);
 }
 
 export function buildOverlayPixels(grid, hexColour) {
