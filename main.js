@@ -1,6 +1,7 @@
 import { loadDataset } from "./data/datasetLoader.js";
-import { createGlobe, startRenderLoop } from "./view/globe.js";
+import { createGlobe, HEIGHT_EXAGGERATION, startRenderLoop } from "./view/globe.js";
 import { createOverlay, setLayerVisible } from "./view/overlay.js";
+import { applyElevation } from "./view/terrain.js";
 import { connectDebug, connectLayerDebug } from "./debug/logState.js";
 
 const IS_DEBUG = false;
@@ -43,6 +44,11 @@ function connectToggles(layers, overlay) {
   }
 }
 
+async function addTerrain(globe) {
+  const elevation = await loadDataset("elevation");
+  applyElevation(globe.moon.geometry, elevation, HEIGHT_EXAGGERATION);
+}
+
 async function main() {
   const container = document.getElementById("globe");
   if (!container) {
@@ -53,6 +59,13 @@ async function main() {
   const globe = createGlobe(container);
   if (IS_DEBUG) connectDebug(globe);
   startRenderLoop(globe);
+
+  try {
+    await addTerrain(globe);
+  } catch (error) {
+    console.error(error);
+    showError(`The terrain could not be shown. ${error.message}`);
+  }
 
   try {
     const grids = await loadGrids(LAYERS);

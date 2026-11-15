@@ -3,6 +3,9 @@ import { OrbitControls } from "three/addons/controls/OrbitControls.js";
 
 const MOON_RADIUS = 1;
 const CAMERA_DISTANCE = 3;
+const MOON_WIDTH_SEGMENTS = 720;
+const MOON_HEIGHT_SEGMENTS = 360;
+export const HEIGHT_EXAGGERATION = 7;
 
 function createScene() {
    const scene = new THREE.Scene();
@@ -38,7 +41,11 @@ function createLights(scene) {
 }
 
 function createMoon(scene) {
-   const geometry = new THREE.SphereGeometry(MOON_RADIUS, 128, 64);
+   const geometry = new THREE.SphereGeometry(
+      MOON_RADIUS,
+      MOON_WIDTH_SEGMENTS,
+      MOON_HEIGHT_SEGMENTS,
+   );
    const material = new THREE.MeshStandardMaterial({
       color: "grey",
       roughness: 1,
