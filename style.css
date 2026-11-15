@@ -19,6 +19,8 @@ body {
 
 .panel {
   position: absolute;
+  max-height: calc(100vh - 32px);
+  overflow-y: auto;
   top: 16px;
   left: 16px;
   display: flex;
@@ -157,4 +159,36 @@ body {
 
 .result-card__score {
   color: #aaa;
+}
+
+.panel__group {
+  margin: 6px 0 0;
+  color: #aaa;
+  font-size: 12px;
+  font-weight: normal;
+}
+
+.legend {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  margin: 0 0 4px 24px;
+}
+
+.legend__swatch {
+  width: 14px;
+  height: 10px;
+  border: 1px solid #666;
+}
+
+.legend__dot {
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+}
+
+.legend__label {
+  margin-left: 6px;
+  color: #bbb;
+  font-size: 11px;
 }

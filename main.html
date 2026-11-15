@@ -21,16 +21,7 @@
     <aside class="panel">
       <details id="resources-category" class="panel__category">
         <summary>Resources</summary>
-        <div class="panel__options">
-          <div class="panel__option">
-            <input type="checkbox" id="iron-toggle" />
-            <label for="iron-toggle">Iron (FeO)</label>
-          </div>
-          <div class="panel__option">
-            <input type="checkbox" id="silicon-toggle" />
-            <label for="silicon-toggle">Silicon (SiO₂)</label>
-          </div>
-        </div>
+        <div id="resource-options" class="panel__options"></div>
       </details>
       <details id="terrain-category" class="panel__category">
         <summary>Terrain</summary>
@@ -39,10 +30,12 @@
             <input type="checkbox" id="flat-toggle" />
             <label for="flat-toggle">Flat areas only</label>
           </div>
+          <div id="flat-legend" class="legend"></div>
           <div class="panel__option">
             <input type="checkbox" id="slope-dots-toggle" />
             <label for="slope-dots-toggle">Slope (dots)</label>
           </div>
+          <div id="slope-dots-legend" class="legend"></div>
         </div>
       </details>
       <section class="panel__search">

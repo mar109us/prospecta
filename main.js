@@ -16,6 +16,8 @@ import {
 } from "./view/layerToggles.js";
 import { createMarkerGroup, showMarkers, updateMarkerVisibility } from "./view/markers.js";
 import { connectSearchPanel } from "./view/searchPanel.js";
+import { buildResourceOptions } from "./view/resourcePanel.js";
+import { drawFlatLegend, drawResourceLegends, drawSlopeLegend } from "./view/legend.js";
 import { findLandingSpots } from "./data/landingSpots.js";
 import { connectDebug, connectLayerDebug, logLandingSpots } from "./debug/logState.js";
 import { DEBUG, LANDING, MOON, PANEL, RESOURCES, SLOPE, TEXTURES } from "./settings.js";
@@ -132,7 +134,10 @@ function buildToggles(resourceOverlay, slopeOverlay) {
 function overlayMaterials(overlays) {
   const materials = [];
   for (const overlay of overlays) {
-    if (overlay) materials.push(overlay.mesh.material);
+    if (!overlay) continue;
+    for (const mesh of overlay.meshes) {
+      materials.push(mesh.material);
+    }
   }
   return materials;
 }
@@ -143,6 +148,10 @@ async function main() {
     console.error('Could not start: no element with id "globe" in main.html.');
     return;
   }
+
+  buildResourceOptions("resource-options", RESOURCE_LAYERS);
+  drawFlatLegend("flat-legend");
+  drawSlopeLegend("slope-dots-legend");
 
   const globe = createGlobe(container);
   const loaded = {
@@ -170,6 +179,7 @@ async function main() {
   let resourceOverlay = null;
   try {
     resourceOverlay = await addResourceLayers(globe, loaded);
+    drawResourceLegends(RESOURCE_LAYERS, loaded.resourceGrids);
   } catch (error) {
     console.error(error);
     showError(`The resource layers could not be shown. ${error.message}`);

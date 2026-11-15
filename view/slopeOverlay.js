@@ -96,6 +96,7 @@ export function createSlopeOverlay(globe, grid) {
 
   return {
     mesh: mesh,
+    meshes: [mesh],
     uniforms: uniforms,
   };
 }

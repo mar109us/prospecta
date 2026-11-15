@@ -21,30 +21,41 @@ GRS_PATH = PROJECT_ROOT / "tools/convert/raw/lpgrs_high1_elem_abundance_2deg.tab
 FIELD_COUNT = 61
 SUBDIVISION_LEVELS = 2
 
-IRON = {
-    "name": "iron",
-    "unit": "FeO wt%",
-    "source": "Lunar Prospector GRS, Prettyman 2012 (2 degree equal-area pixels)",
-    "column": 12,
-    "uncertainty_column": 51,
-    "output_path": PROJECT_ROOT / "datasets/iron.json",
-}
-
-SILICON = {
-    "name": "silicon",
-    "unit": "SiO2 wt%",
-    "source": "Lunar Prospector GRS, Prettyman 2012 (2 degree equal-area pixels)",
-    "column": 9,
-    "uncertainty_column": 33,
-    "output_path": PROJECT_ROOT / "datasets/silicon.json",
-}
+GRS_SOURCE = "Lunar Prospector GRS, Prettyman 2012 (2 degree equal-area pixels)"
+OXIDE_SCALE = 100
+PPM_SCALE = 1
 
 
-def read_uncertainty(fields, column):
+def make_dataset(name, unit, column, uncertainty_column, scale, is_zero_missing):
+    return {
+        "name": name,
+        "unit": unit,
+        "source": GRS_SOURCE,
+        "column": column,
+        "uncertainty_column": uncertainty_column,
+        "scale": scale,
+        "is_zero_missing": is_zero_missing,
+        "output_path": PROJECT_ROOT / f"datasets/{name}.json",
+    }
+
+
+DATASETS = [
+    make_dataset("iron", "FeO wt%", 12, 51, OXIDE_SCALE, True),
+    make_dataset("silicon", "SiO2 wt%", 9, 33, OXIDE_SCALE, False),
+    make_dataset("titanium", "TiO2 wt%", 11, 46, OXIDE_SCALE, False),
+    make_dataset("magnesium", "MgO wt%", 7, 16, OXIDE_SCALE, False),
+    make_dataset("aluminium", "Al2O3 wt%", 8, 25, OXIDE_SCALE, False),
+    make_dataset("calcium", "CaO wt%", 10, 40, OXIDE_SCALE, False),
+    make_dataset("potassium", "K ppm", 13, 55, PPM_SCALE, False),
+    make_dataset("thorium", "Th ppm", 14, 58, PPM_SCALE, False),
+]
+
+
+def read_uncertainty(fields, column, scale):
     variance = float(fields[column])
     if variance <= 0:
         return None
-    return math.sqrt(variance) * 100
+    return math.sqrt(variance) * scale
 
 
 def read_pixels(path, dataset):
@@ -57,9 +68,9 @@ def read_pixels(path, dataset):
                     f"Line {line_number} of {path.name} has {len(fields)} fields, expected {FIELD_COUNT}."
                 )
 
-            value = float(fields[dataset["column"]]) * 100
-            uncertainty = read_uncertainty(fields, dataset["uncertainty_column"])
-            if value == 0:
+            value = float(fields[dataset["column"]]) * dataset["scale"]
+            uncertainty = read_uncertainty(fields, dataset["uncertainty_column"], dataset["scale"])
+            if value == 0 and dataset["is_zero_missing"]:
                 value = None
                 uncertainty = None
 
@@ -140,8 +151,8 @@ def convert_dataset(dataset):
 
 def main():
     download_file(GRS_URL, GRS_PATH)
-    convert_dataset(IRON)
-    convert_dataset(SILICON)
+    for dataset in DATASETS:
+        convert_dataset(dataset)
 
 
 if __name__ == "__main__":

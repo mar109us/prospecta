@@ -58,7 +58,7 @@ function createLayerUniforms(layers, grids) {
   };
 }
 
-export function createOverlay(globe, layers, grids) {
+function createChunk(globe, layers, grids) {
   const uniforms = createLayerUniforms(layers, grids);
   const material = new THREE.MeshStandardMaterial({
     map: createLayerTexture(grids),
@@ -81,8 +81,25 @@ export function createOverlay(globe, layers, grids) {
   };
 }
 
+export function createOverlay(globe, layers, grids) {
+  const chunks = [];
+  const meshes = [];
+  for (let start = 0; start < layers.length; start += MAX_LAYERS) {
+    const end = start + MAX_LAYERS;
+    const chunk = createChunk(globe, layers.slice(start, end), grids.slice(start, end));
+    chunks.push(chunk);
+    meshes.push(chunk.mesh);
+  }
+
+  return {
+    chunks: chunks,
+    meshes: meshes,
+  };
+}
+
 export function setLayerVisible(overlay, index, isVisible) {
   let visibility = 0;
   if (isVisible) visibility = 1;
-  overlay.uniforms.layerVisible.value.setComponent(index, visibility);
+  const chunk = overlay.chunks[Math.floor(index / MAX_LAYERS)];
+  chunk.uniforms.layerVisible.value.setComponent(index % MAX_LAYERS, visibility);
 }
