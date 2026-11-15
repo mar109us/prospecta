@@ -102,6 +102,9 @@ function renderGlobe(globe) {
    updateCameraFlight(globe);
    updateControlSpeed(globe);
    globe.controls.update();
+   for (const callback of globe.frameCallbacks) {
+      callback();
+   }
    globe.renderer.render(globe.scene, globe.camera);
 }
 
@@ -120,6 +123,7 @@ export function createGlobe(container) {
       moon: moon,
       controls: controls,
       cameraFlight: null,
+      frameCallbacks: [],
    };
 
    window.addEventListener("resize", () => handleResize(globe));

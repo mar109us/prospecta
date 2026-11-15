@@ -111,6 +111,7 @@ body {
 }
 
 .result-card {
+  position: relative;
   display: flex;
   flex-direction: column;
   gap: 2px;
@@ -123,6 +124,22 @@ body {
   border: 1px solid #555;
   border-radius: 6px;
   cursor: pointer;
+}
+
+.result-card__badge {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 26px;
+  height: 26px;
+  color: black;
+  font-size: 15px;
+  font-weight: bold;
+  background: white;
+  border-radius: 50%;
 }
 
 .result-card:hover {

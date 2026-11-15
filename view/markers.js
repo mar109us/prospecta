@@ -30,6 +30,8 @@ function createNumberTexture(number) {
 function createMarker(spot, elevation, exaggeration) {
   const material = new THREE.SpriteMaterial({
     map: createNumberTexture(spot.rank),
+    depthTest: false,
+    depthWrite: false,
   });
   const marker = new THREE.Sprite(material);
   marker.scale.set(MARKER_SIZE, MARKER_SIZE, 1);
@@ -40,6 +42,17 @@ function createMarker(spot, elevation, exaggeration) {
   const position = latLonToScenePosition(spot.lat, spot.lon, radius + MARKER_LIFT);
   marker.position.set(position.x, position.y, position.z);
   return marker;
+}
+
+export function updateMarkerVisibility(group, camera) {
+  const cameraDistance = camera.position.length();
+  const horizon = 1 / cameraDistance;
+  for (const marker of group.children) {
+    const facing = marker.position.dot(camera.position) / (marker.position.length() * cameraDistance);
+    let isOnNearSide = false;
+    if (facing > horizon) isOnNearSide = true;
+    marker.visible = isOnNearSide;
+  }
 }
 
 export function createMarkerGroup(globe) {

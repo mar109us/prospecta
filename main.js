@@ -14,7 +14,7 @@ import {
   createToggle,
   openCategories,
 } from "./view/layerToggles.js";
-import { createMarkerGroup, showMarkers } from "./view/markers.js";
+import { createMarkerGroup, showMarkers, updateMarkerVisibility } from "./view/markers.js";
 import { connectSearchPanel } from "./view/searchPanel.js";
 import { findLandingSpots } from "./data/landingSpots.js";
 import { connectDebug, connectLayerDebug, logLandingSpots } from "./debug/logState.js";
@@ -82,7 +82,7 @@ function tickedResources(loaded) {
   return ticked;
 }
 
-function runSearch(loaded, markerGroup) {
+function runSearch(globe, loaded, markerGroup) {
   const resourceGrids = tickedResources(loaded);
   if (!loaded.slope) {
     return {
@@ -104,6 +104,7 @@ function runSearch(loaded, markerGroup) {
     settings: LANDING,
   });
   showMarkers(markerGroup, spots, loaded.elevation, MOON.heightExaggeration);
+  if (LANDING.isFlyToBestOnSearch && spots.length > 0) flyToSpot(globe, spots[0].lat, spots[0].lon);
   if (DEBUG.isEnabled) logLandingSpots(spots);
   return {
     spots: spots,
@@ -188,8 +189,9 @@ async function main() {
   openCategories(PANEL.openCategories);
 
   const markerGroup = createMarkerGroup(globe);
+  globe.frameCallbacks.push(() => updateMarkerVisibility(markerGroup, globe.camera));
   connectSearchPanel(
-    () => runSearch(loaded, markerGroup),
+    () => runSearch(globe, loaded, markerGroup),
     (spot) => flyToSpot(globe, spot.lat, spot.lon),
   );
 

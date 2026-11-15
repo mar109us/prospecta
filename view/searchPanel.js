@@ -23,6 +23,7 @@ function createCard(spot, onSelect) {
   const card = document.createElement("button");
   card.type = "button";
   card.className = "result-card";
+  card.appendChild(createLine("result-card__badge", `${spot.rank}`));
 
   card.appendChild(createLine("result-card__place", formatLatLon(spot.lat, spot.lon)));
   for (const distance of spot.distances) {

@@ -92,6 +92,7 @@ export const LANDING = {
   searchStepDeg: 1,
   surroundingsRadiusKm: 50,
   slopePenaltyKmPerDegree: 20,
-  minSeparationKm: 200,
-  resultCount: 5,
+  minSeparationKm: 500,
+  resultCount: 10,
+  isFlyToBestOnSearch: true,
 };
