@@ -4,12 +4,13 @@ export const DEBUG = {
 
 export const CAMERA = {
   fov: 5,
-  startDistance: 6,
-//   startDistance: 24,
+  startDistance: 24,
   minDistance: 6,
   maxDistance: 24,
   rotateSpeedPerAltitude: 0.05,
   zoomSpeedPerAltitude: 2,
+  focusDistance: 8,
+  flyDurationMs: 1500,
 };
 
 export const MOON = {

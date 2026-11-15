@@ -1,5 +1,5 @@
 import { loadDataset } from "./data/datasetLoader.js";
-import { createGlobe, lookAtSpot, startRenderLoop } from "./view/globe.js";
+import { createGlobe, flyToSpot, startRenderLoop } from "./view/globe.js";
 import { createOverlay, setLayerVisible } from "./view/overlay.js";
 import { applyElevation } from "./view/terrain.js";
 import { applyMoonTexture, applyNormalMap } from "./view/moonTexture.js";
@@ -190,7 +190,7 @@ async function main() {
   const markerGroup = createMarkerGroup(globe);
   connectSearchPanel(
     () => runSearch(loaded, markerGroup),
-    (spot) => lookAtSpot(globe, spot.lat, spot.lon),
+    (spot) => flyToSpot(globe, spot.lat, spot.lon),
   );
 
   try {
