@@ -1,8 +1,7 @@
 import * as THREE from "three";
 import { OrbitControls } from "three/addons/controls/OrbitControls.js";
 import { CAMERA, LIGHTS, MOON, RENDER } from "../settings.js";
-import { latLonToScenePosition } from "./terrainMath.js";
-import { easeInOut, slerpDirection } from "./cameraMath.js";
+import { connectFocusCancel, updateSpotFocus } from "./spotFocus.js";
 
 const MOON_RADIUS = 1;
 const MOON_SURFACE_MARGIN = 1.1;
@@ -84,27 +83,13 @@ function handleResize(globe) {
    globe.renderer.setSize(width, height);
 }
 
-function updateCameraFlight(globe) {
-   const flight = globe.cameraFlight;
-   if (!flight) return;
-
-   const elapsedMs = performance.now() - flight.startTime;
-   const progress = Math.min(elapsedMs / flight.durationMs, 1);
-   const eased = easeInOut(progress);
-   const direction = slerpDirection(flight.fromDirection, flight.toDirection, eased);
-   const distance = flight.fromDistance + (flight.toDistance - flight.fromDistance) * eased;
-   globe.camera.position.set(direction.x * distance, direction.y * distance, direction.z * distance);
-
-   if (progress === 1) {
-      globe.cameraFlight = null;
-      globe.controls.enabled = true;
-   }
-}
-
 function renderGlobe(globe) {
-   updateCameraFlight(globe);
    updateControlSpeed(globe);
-   globe.controls.update();
+   if (globe.spotFocus) {
+      updateSpotFocus(globe);
+   } else {
+      globe.controls.update();
+   }
    for (const callback of globe.frameCallbacks) {
       callback();
    }
@@ -125,34 +110,15 @@ export function createGlobe(container) {
       renderer: renderer,
       moon: moon,
       controls: controls,
-      cameraFlight: null,
+      spotFocus: null,
       frameCallbacks: [],
    };
 
    window.addEventListener("resize", () => handleResize(globe));
+   connectFocusCancel(globe);
    return globe;
 }
 
 export function startRenderLoop(globe) {
    globe.renderer.setAnimationLoop(() => renderGlobe(globe));
-}
-
-export function flyToSpot(globe, lat, lon) {
-   const fromDistance = globe.camera.position.length();
-   const from = globe.camera.position.clone().normalize();
-   const toDistance = Math.min(Math.max(CAMERA.focusDistance, CAMERA.minDistance), CAMERA.maxDistance);
-
-   globe.controls.enabled = false;
-   globe.cameraFlight = {
-      startTime: performance.now(),
-      durationMs: CAMERA.flyDurationMs,
-      fromDirection: {
-         x: from.x,
-         y: from.y,
-         z: from.z,
-      },
-      toDirection: latLonToScenePosition(lat, lon, 1),
-      fromDistance: fromDistance,
-      toDistance: toDistance,
-   };
 }

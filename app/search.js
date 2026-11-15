@@ -1,5 +1,6 @@
 import { findLandingSpots } from "../data/landingSpots.js";
-import { flyToSpot } from "../view/globe.js";
+import { focusOnSpot } from "../view/spotFocus.js";
+import { latLonToScenePosition } from "../view/terrainMath.js";
 import { createMarkerGroup, showMarkers, updateMarkerVisibility } from "../view/markers.js";
 import { createRouteGroups, showRoutes, updateRoutes } from "../view/routes.js";
 import { connectSearchPanel } from "../view/searchPanel.js";
@@ -49,8 +50,15 @@ function tickedResources(loaded) {
   };
 }
 
+function markerPosition(group, spot) {
+  for (const marker of group.children) {
+    if (marker.userData.spot === spot) return marker.position;
+  }
+  return latLonToScenePosition(spot.lat, spot.lon, 1);
+}
+
 function selectSpot(search, spot) {
-  flyToSpot(search.globe, spot.lat, spot.lon);
+  focusOnSpot(search.globe, markerPosition(search.markerGroup, spot));
   showRoutes(search.routeGroups, spot, RESOURCES.layers, search.loaded.elevation, MOON.heightExaggeration);
   if (search.slopeOverlay) setFocus(search.slopeOverlay, spot);
 }

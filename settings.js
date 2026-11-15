@@ -15,6 +15,11 @@ export const CAMERA = {
   zoomSpeedPerAltitude: 2,
   focusDistance: 8,
   flyDurationMs: 1500,
+  orbitTiltDegrees: 60,
+  tiltDurationMs: 1000,
+  orbitSecondsPerTurn: 60,
+  orbitDistance: 7,
+  releaseDurationMs: 500,
 };
 
 export const MOON = {
