@@ -5,7 +5,7 @@ import numpy as np
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "tools/convert"))
 
-from normalMap import encode_normals, fine_detail, slopes
+from normalMap import encode_normals, fine_detail, slopes, tile_slopes
 
 
 def make_flat():
@@ -67,3 +67,26 @@ def run_tests():
 
 
 run_tests()
+
+
+def tile_lats(rows):
+    return np.zeros(rows)
+
+
+def test_tile_slopes_flat_gives_128_128_255():
+    slope_east, slope_north = tile_slopes(np.zeros((6, 6)), tile_lats(4), 1, 1)
+    assert slope_east.shape == (4, 4)
+    assert list(encode_normals(slope_east, slope_north, 4)[0, 0]) == [128, 128, 255]
+
+
+def test_tile_slopes_wider_pixels_halve_east_slope():
+    rising_east = np.tile(np.arange(6, dtype=float) * 100, (6, 1))
+    narrow_east, _ = tile_slopes(rising_east, tile_lats(4), 1, 1)
+    wide_east, _ = tile_slopes(rising_east, tile_lats(4), 1, 2)
+    assert abs(wide_east[0, 0] * 2 - narrow_east[0, 0]) < 1e-12
+
+
+def test_tile_slopes_north_is_up_the_rows():
+    rising_north = np.tile(np.arange(6, dtype=float)[::-1, np.newaxis] * 100, (1, 6))
+    _, slope_north = tile_slopes(rising_north, tile_lats(4), 1, 1)
+    assert slope_north[0, 0] > 0

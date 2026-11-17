@@ -1,3 +1,5 @@
+import { MASK_DISCARD, MASK_PARS } from "./detailMask.js";
+
 function slopeFunctions(thresholdCount) {
   return `
 #define SLOPE_THRESHOLD_COUNT ${thresholdCount}
@@ -81,7 +83,7 @@ export function applySlopeShader(material, uniforms, thresholdCount) {
       shader.uniforms[name] = uniforms[name];
     }
     shader.fragmentShader = shader.fragmentShader
-      .replace("void main() {", `${slopeFunctions(thresholdCount)}\nvoid main() {`)
-      .replace("#include <map_fragment>", SLOPE_MAP_FRAGMENT);
+      .replace("void main() {", `${MASK_PARS}${slopeFunctions(thresholdCount)}\nvoid main() {`)
+      .replace("#include <map_fragment>", `${MASK_DISCARD}${SLOPE_MAP_FRAGMENT}`);
   };
 }

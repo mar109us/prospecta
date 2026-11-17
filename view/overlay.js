@@ -1,6 +1,7 @@
 import * as THREE from "three";
 import { fadeInLatLimit, fadeLatLimit, fillChannel, isChunkNeeded, MAX_LAYERS, NO_FADE_LIMIT_DEG } from "./overlayPixels.js";
 import { applyLayerShader } from "./layerShader.js";
+import { useDetailMask } from "./detailMask.js";
 import { curvePower, noiseRatio } from "./layerBands.js";
 import { RESOURCE_BANDS, RESOURCES } from "../settings.js";
 
@@ -65,6 +66,7 @@ function createChunk(globe, layers) {
   const pixels = new Uint8Array(GRID_WIDTH * GRID_HEIGHT * 4);
   const texture = createLayerTexture(pixels);
   const uniforms = createLayerUniforms(layers);
+  uniforms.detailMask = globe.detailMask.uniform;
   const material = new THREE.MeshStandardMaterial({
     map: texture,
     roughness: 1,
@@ -76,6 +78,7 @@ function createChunk(globe, layers) {
     polygonOffsetUnits: -1,
   });
   applyLayerShader(material, uniforms);
+  useDetailMask(material);
 
   const mesh = new THREE.Mesh(globe.moon.geometry, material);
   mesh.visible = false;

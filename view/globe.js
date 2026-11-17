@@ -2,6 +2,8 @@ import * as THREE from "three";
 import { OrbitControls } from "three/addons/controls/OrbitControls.js";
 import { CAMERA, LIGHTS, MOON, RENDER } from "../settings.js";
 import { applyTilt, connectTiltDrag, createTiltState } from "./cameraTilt.js";
+import { createDetailMask } from "./detailMask.js";
+import { applyMoonMask } from "./moonShader.js";
 import { connectFocusCancel, updateSpotFocus } from "./spotFocus.js";
 
 const MOON_RADIUS = 1;
@@ -117,6 +119,8 @@ export function createGlobe(container) {
    const renderer = createRenderer(container);
    createLights(scene, camera);
    const moon = createMoon(scene);
+   const detailMask = createDetailMask();
+   applyMoonMask(moon.material, detailMask);
    const tilt = createTiltState(camera);
    const controls = createControls(tilt.baseCamera, renderer);
 
@@ -128,6 +132,7 @@ export function createGlobe(container) {
       controls: controls,
       spotFocus: null,
       tilt: tilt,
+      detailMask: detailMask,
       frameCallbacks: [],
    };
 

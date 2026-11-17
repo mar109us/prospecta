@@ -8,3 +8,4 @@ tests
 plan
 Dockerfile
 docker-compose.yml
+assets/detail

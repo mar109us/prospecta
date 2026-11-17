@@ -1,7 +1,8 @@
 import { loadDataset } from "./data/datasetLoader.js";
 import { createGlobe, startRenderLoop } from "./view/globe.js";
 import { applyElevation } from "./view/terrain.js";
-import { applyMoonTexture, applyNormalMap } from "./view/moonTexture.js";
+import { applyMoonTexture, applyNormalMap, NORMAL_MAP_BAKED_STRENGTH } from "./view/moonTexture.js";
+import { connectDetail } from "./view/detailLoader.js";
 import {
   createSlopeOverlay,
   setFlatVisible,
@@ -20,7 +21,7 @@ import { precompileMeshes } from "./view/overlay.js";
 import { connectLandingSearch } from "./app/search.js";
 import { createSunlightLayer, sunlightToggle } from "./app/sunlightLayer.js";
 import { connectDebug } from "./debug/logState.js";
-import { DEBUG, MOON, RESOURCES, SLOPE, SUNLIGHT, TEXTURES } from "./settings.js";
+import { DEBUG, DETAIL, MOON, RESOURCES, SLOPE, SUNLIGHT, TEXTURES } from "./settings.js";
 
 const RESOURCE_LAYERS = RESOURCES.layers;
 
@@ -88,6 +89,37 @@ function overlayMaterials(overlays) {
     materials.push(mesh.material);
   }
   return materials;
+}
+
+async function addDetail(globe, loaded, overlays) {
+  if (!DETAIL.isEnabled) return;
+  if (!loaded.elevation) {
+    console.warn("Detail tiles are off because the terrain did not load.");
+    return;
+  }
+  if (!globe.moon.material.map) {
+    console.warn("Detail tiles are off because the Moon texture did not load.");
+    return;
+  }
+  const context = {
+    folderUrl: DETAIL.folderUrl,
+    coarseGrid: loaded.elevation,
+    coarseMesh: {
+      width: MOON.widthSegments,
+      height: MOON.heightSegments,
+      normals: globe.moon.geometry.attributes.normal.array,
+    },
+    featherDeg: DETAIL.featherDeg,
+    exaggeration: MOON.heightExaggeration,
+    normalStrength: MOON.heightExaggeration / NORMAL_MAP_BAKED_STRENGTH,
+    blendVertices: DETAIL.edgeBlendVertices,
+    overlayMeshes: overlayMeshes(overlays),
+  };
+  try {
+    await connectDetail(globe, context, showError);
+  } catch (error) {
+    console.warn(`Detail tiles are off. ${error.message}`);
+  }
 }
 
 async function main() {
@@ -171,6 +203,7 @@ async function main() {
     showError(`The normal map could not be loaded from ${TEXTURES.normalMapUrl}.`);
   }
   precompileMeshes(globe, overlayMeshes(overlays));
+  await addDetail(globe, loaded, overlays);
 }
 
 main();

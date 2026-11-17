@@ -28,7 +28,23 @@ export const CAMERA = {
 export const MOON = {
   widthSegments: 720,
   heightSegments: 360,
-  heightExaggeration: 3,
+  heightExaggeration: 1,
+};
+
+export const DETAIL = {
+  isEnabled: true,
+  folderUrl: "assets/detail",
+  maxAltitude: 0.3,
+  loadRadiusDeg: 8,
+  maxTiles: 24,
+  cacheTiles: 40,
+  maxConcurrentLoads: 4,
+  updateIntervalMs: 300,
+  settleDeg: 0.5,
+  edgeBlendVertices: 8,
+  fadeMs: 800,
+  morphMs: 1200,
+  featherDeg: 1,
 };
 
 export const LIGHTS = {

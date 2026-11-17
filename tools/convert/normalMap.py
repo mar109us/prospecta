@@ -42,6 +42,16 @@ def slopes(detail, pixels_per_degree):
     return slope_east, slope_north
 
 
+def tile_slopes(elevation, lats, pixels_per_degree, factor):
+    pixel_north_m = (2 * math.pi * MOON_RADIUS_M / 360) / pixels_per_degree
+    cos_lats = np.maximum(np.cos(np.radians(lats)), MIN_COS_LAT)
+    pixel_east_m = pixel_north_m * factor * cos_lats[:, np.newaxis]
+
+    slope_east = (elevation[1:-1, 2:] - elevation[1:-1, :-2]) / (2 * pixel_east_m)
+    slope_north = (elevation[:-2, 1:-1] - elevation[2:, 1:-1]) / (2 * pixel_north_m)
+    return slope_east, slope_north
+
+
 def encode_normals(slope_east, slope_north, strength):
     x = -slope_east * strength
     y = -slope_north * strength

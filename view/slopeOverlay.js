@@ -1,4 +1,5 @@
 import * as THREE from "three";
+import { useDetailMask } from "./detailMask.js";
 import { buildLayerPixels } from "./overlayPixels.js";
 import { applySlopeShader } from "./slopeShader.js";
 import { toUnitVector } from "../data/geo.js";
@@ -99,6 +100,7 @@ export function createSlopeOverlay(globe, grid) {
   }
 
   const uniforms = createSlopeUniforms();
+  uniforms.detailMask = globe.detailMask.uniform;
   const material = new THREE.MeshStandardMaterial({
     map: createSlopeTexture(grid),
     roughness: 1,
@@ -109,6 +111,7 @@ export function createSlopeOverlay(globe, grid) {
     polygonOffsetUnits: -2,
   });
   applySlopeShader(material, uniforms, SLOPE.thresholds.length);
+  useDetailMask(material);
 
   const mesh = new THREE.Mesh(globe.moon.geometry, material);
   mesh.visible = false;

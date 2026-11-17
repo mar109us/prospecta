@@ -1,6 +1,6 @@
 import * as THREE from "three";
 
-const NORMAL_MAP_BAKED_STRENGTH = 4;
+export const NORMAL_MAP_BAKED_STRENGTH = 4;
 
 async function loadTexture(globe, url, colorSpace) {
   const loader = new THREE.TextureLoader();

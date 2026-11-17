@@ -2,4 +2,6 @@ services:
    prospector:
       build: .
       ports: ["127.0.0.1:3000:80"]
+      volumes:
+         - ./assets/detail:/usr/share/nginx/html/assets/detail:ro
       restart: unless-stopped

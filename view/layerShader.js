@@ -1,3 +1,5 @@
+import { MASK_DISCARD, MASK_PARS } from "./detailMask.js";
+
 const LAYER_FUNCTIONS = `
 uniform float bandCount;
 uniform vec4 layerCurvePowers;
@@ -55,7 +57,7 @@ export function applyLayerShader(material, uniforms) {
       shader.uniforms[name] = uniforms[name];
     }
     shader.fragmentShader = shader.fragmentShader
-      .replace("void main() {", `${LAYER_FUNCTIONS}\nvoid main() {`)
-      .replace("#include <map_fragment>", LAYER_MAP_FRAGMENT);
+      .replace("void main() {", `${MASK_PARS}${LAYER_FUNCTIONS}\nvoid main() {`)
+      .replace("#include <map_fragment>", `${MASK_DISCARD}${LAYER_MAP_FRAGMENT}`);
   };
 }
