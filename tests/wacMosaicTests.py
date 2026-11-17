@@ -5,7 +5,7 @@ import numpy as np
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "tools/convert"))
 
-from wacMosaic import covers, encode_ratio, equirect_position, polar_position, shade_ratio
+from wacMosaic import covers, encode_ratio, equirect_position, fade_near_seams, polar_position, seam_weight, shade_ratio
 
 
 def make_equirect():
@@ -89,3 +89,26 @@ def test_noise_in_dark_areas_stays_near_1():
     values = np.full((10, 10), 0.002)
     values[4, 4] = 0.006
     assert shade_ratio(values, 5, 0.02)[4, 4] < 1.2
+
+
+def test_seam_weight_is_0_on_a_seam_meridian():
+    assert seam_weight(np.array([-75.0]), np.array([90.0]), 8)[0] == 0
+    assert seam_weight(np.array([30.0]), np.array([180.0]), 8)[0] < 1e-12
+
+
+def test_seam_weight_is_1_far_from_seams():
+    assert seam_weight(np.array([30.0]), np.array([45.0]), 8)[0] == 1
+
+
+def test_seam_weight_fades_on_the_60_degree_join():
+    assert seam_weight(np.array([-60.0]), np.array([45.0]), 8)[0] == 0
+    assert seam_weight(np.array([-60.1]), np.array([45.0]), 8)[0] > 0
+
+
+def test_seam_distance_shrinks_near_the_pole():
+    near_pole = seam_weight(np.array([-89.9]), np.array([45.0]), 8)[0]
+    assert near_pole < 1
+
+
+def test_fade_moves_ratio_toward_1():
+    assert fade_near_seams(np.array([1.6]), np.array([0.5]))[0] == 1.3

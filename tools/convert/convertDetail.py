@@ -9,7 +9,7 @@ from detailTiles import PIXELS_PER_DEGREE, SEGMENTS, TEXTURE_SIZE, lon_factor, l
 from download import download_file
 from ldemWindow import LOLA_256, corner_heights_m, open_ldem, pixel_heights_m
 from normalMap import encode_normals, tile_slopes, write_ppm
-from wacMosaic import covers, encode_ratio, open_mosaic, read_label, sample, shade_ratio
+from wacMosaic import covers, encode_ratio, fade_near_seams, open_mosaic, read_label, sample, seam_weight, shade_ratio
 
 PROJECT_ROOT = Path(__file__).resolve().parents[2]
 RAW = PROJECT_ROOT / "tools/convert/raw"
@@ -34,6 +34,7 @@ BAKED_STRENGTH = 4
 JPG_QUALITY = 90
 SHADE_BLUR_PIXELS = 7
 SHADE_DARK_FLOOR = 0.02
+SEAM_FADE_KM = 8
 SIPS_BATCH = 100
 
 
@@ -83,6 +84,9 @@ def bake_shade(mosaics, tile):
     mosaic = mosaic_for(mosaics, tile)
     values = sample(mosaic, mosaic["source"], lat_grid, lon_grid, lat_step, lon_step)
     ratio = shade_ratio(values, SHADE_BLUR_PIXELS, SHADE_DARK_FLOOR)[margin:-margin, margin:-margin]
+    inner_lats = lat_grid[margin:-margin, margin:-margin]
+    inner_lons = lon_grid[margin:-margin, margin:-margin]
+    ratio = fade_near_seams(ratio, seam_weight(inner_lats, inner_lons, SEAM_FADE_KM))
     grey = encode_ratio(ratio)
     return np.stack([grey, grey, grey], axis=-1)
 

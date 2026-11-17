@@ -6,6 +6,8 @@ import numpy as np
 MOON_RADIUS_M = 1737400
 MISSING_BELOW = -1e30
 SUB_SAMPLES = 3
+SEAM_MERIDIANS = [0, 90]
+SEAM_LATITUDES = [0, 60]
 
 
 def label_number(label, tag):
@@ -117,3 +119,23 @@ def shade_ratio(values, window, dark_floor):
 
 def encode_ratio(ratio):
     return np.clip(np.round(ratio * 128), 0, 255).astype(np.uint8)
+
+
+def distance_to_seams_km(lats, lons):
+    lat_radians = np.radians(lats)
+    nearest = np.full(np.shape(lats), np.inf)
+    for meridian in SEAM_MERIDIANS:
+        across = np.abs(np.cos(lat_radians) * np.sin(np.radians(lons - meridian)))
+        nearest = np.minimum(nearest, np.arcsin(np.minimum(across, 1)))
+    for seam_lat in SEAM_LATITUDES:
+        nearest = np.minimum(nearest, np.abs(np.radians(np.abs(lats) - seam_lat)))
+    return nearest * MOON_RADIUS_M / 1000
+
+
+def seam_weight(lats, lons, fade_km):
+    t = np.clip(distance_to_seams_km(lats, lons) / fade_km, 0, 1)
+    return t * t * (3 - 2 * t)
+
+
+def fade_near_seams(ratio, weight):
+    return 1 + (ratio - 1) * weight
