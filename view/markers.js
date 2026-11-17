@@ -1,7 +1,7 @@
 import * as THREE from "three";
+import { MARKERS } from "../settings.js";
 import { elevationAt, elevationToRadius, latLonToScenePosition } from "./terrainMath.js";
 
-export const MARKER_SIZE = 0.035;
 const MARKER_LIFT = 0.01;
 const LABEL_PIXELS = 64;
 
@@ -32,9 +32,10 @@ function createMarker(spot, elevation, exaggeration) {
     map: createNumberTexture(spot.rank),
     depthTest: false,
     depthWrite: false,
+    sizeAttenuation: false,
   });
   const marker = new THREE.Sprite(material);
-  marker.scale.set(MARKER_SIZE, MARKER_SIZE, 1);
+  marker.scale.set(MARKERS.screenSize, MARKERS.screenSize, 1);
   marker.renderOrder = 2;
   marker.userData.spot = spot;
 

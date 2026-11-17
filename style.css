@@ -330,3 +330,22 @@ body {
   border-radius: 4px;
   cursor: pointer;
 }
+
+.walk-button {
+  position: absolute;
+  z-index: 2;
+  right: 16px;
+  bottom: 16px;
+  padding: 6px 10px;
+  color: white;
+  font-family: system-ui, sans-serif;
+  background: #2f6f3e;
+  border: 1px solid #41ab5d;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.walk-button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}

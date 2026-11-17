@@ -3,10 +3,10 @@ import { Line2 } from "three/addons/lines/Line2.js";
 import { LineGeometry } from "three/addons/lines/LineGeometry.js";
 import { LineMaterial } from "three/addons/lines/LineMaterial.js";
 import { elevationToRadius, latLonToScenePosition, scenePositionToLatLon, surfaceElevation } from "./terrainMath.js";
-import { isOnNearSide, MARKER_SIZE } from "./markers.js";
+import { isOnNearSide } from "./markers.js";
 import { stackBoxes } from "./labelStack.js";
 import { formatValue, layerLabel, shortUnit } from "./text.js";
-import { ROUTES } from "../settings.js";
+import { MARKERS, ROUTES } from "../settings.js";
 
 function groundPoint(lat, lon, elevation, exaggeration) {
   let radius = 1;
@@ -121,9 +121,8 @@ export function showRoutes(routeGroups, spot, layers, elevation, exaggeration) {
 
 function markerBox(anchor, camera, width, height) {
   const screen = anchor.clone().project(camera);
-  const distance = anchor.distanceTo(camera.position);
-  const viewHeight = 2 * distance * Math.tan(THREE.MathUtils.degToRad(camera.fov / 2));
-  const sizePx = (MARKER_SIZE / viewHeight) * height;
+  const viewHeight = 2 * Math.tan(THREE.MathUtils.degToRad(camera.fov / 2));
+  const sizePx = (MARKERS.screenSize / viewHeight) * height;
   return {
     x: ((screen.x + 1) / 2) * width - sizePx / 2,
     y: ((1 - screen.y) / 2) * height - sizePx / 2,

@@ -13,16 +13,26 @@ export const CAMERA = {
   maxDistance: 4,
   rotateSpeedPerAltitude: 0.05,
   zoomSpeedPerAltitude: 2,
-  focusDistance: 8,
-  flyDurationMs: 1500,
+  focusDistance: 10,
+  flyDurationMs: 2000,
   orbitTiltDegrees: 60,
-  tiltDurationMs: 1000,
-  orbitSecondsPerTurn: 60,
-  orbitDistance: 7,
+  tiltDurationMs: 2000,
+  orbitSecondsPerTurn: 120,
+  orbitDistance: 1.1,
   releaseDurationMs: 500,
   maxTiltDegrees: 80,
   tiltDegreesPerPixel: 0.3,
   orbitZoomStep: 1.1,
+};
+
+export const FIRST_PERSON = {
+  eyeHeightMetres: 300,
+  walkSpeedMetresPerSecond: 300,
+  mouseDegreesPerPixel: 0.15,
+  maxPitchDegrees: 85,
+  fov: 70,
+  nearMetres: 10,
+  farKm: 400,
 };
 
 export const MOON = {
@@ -45,6 +55,10 @@ export const DETAIL = {
   fadeMs: 800,
   morphMs: 1200,
   featherDeg: 1,
+};
+
+export const MARKERS = {
+  screenSize: 0.02,
 };
 
 export const LIGHTS = {

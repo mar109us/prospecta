@@ -3,6 +3,7 @@ import { OrbitControls } from "three/addons/controls/OrbitControls.js";
 import { CAMERA, LIGHTS, MOON, RENDER } from "../settings.js";
 import { applyTilt, connectTiltDrag, createTiltState } from "./cameraTilt.js";
 import { createDetailMask } from "./detailMask.js";
+import { updateFirstPerson } from "./firstPerson.js";
 import { applyMoonMask } from "./moonShader.js";
 import { connectFocusCancel, updateSpotFocus } from "./spotFocus.js";
 
@@ -101,12 +102,14 @@ function updateNearPlane(globe) {
 }
 
 function renderGlobe(globe) {
-   if (globe.spotFocus) {
+   if (globe.firstPerson) {
+      updateFirstPerson(globe);
+   } else if (globe.spotFocus) {
       updateSpotFocus(globe);
    } else {
       updateFreeCamera(globe);
    }
-   updateNearPlane(globe);
+   if (!globe.firstPerson) updateNearPlane(globe);
    for (const callback of globe.frameCallbacks) {
       callback();
    }
@@ -131,6 +134,7 @@ export function createGlobe(container) {
       moon: moon,
       controls: controls,
       spotFocus: null,
+      firstPerson: null,
       tilt: tilt,
       detailMask: detailMask,
       frameCallbacks: [],

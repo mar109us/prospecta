@@ -3,6 +3,7 @@ import { createGlobe, startRenderLoop } from "./view/globe.js";
 import { applyElevation } from "./view/terrain.js";
 import { applyMoonTexture, applyNormalMap, NORMAL_MAP_BAKED_STRENGTH } from "./view/moonTexture.js";
 import { connectDetail } from "./view/detailLoader.js";
+import { connectFirstPerson } from "./view/firstPerson.js";
 import {
   createSlopeOverlay,
   setFlatVisible,
@@ -158,6 +159,7 @@ async function main() {
     console.error(error);
     showError(`The terrain could not be shown. ${error.message}`);
   }
+  connectFirstPerson(globe, loaded.elevation);
 
   let resources = null;
   try {
