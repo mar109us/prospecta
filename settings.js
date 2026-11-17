@@ -7,10 +7,10 @@ export const RENDER = {
 };
 
 export const CAMERA = {
-  fov: 5,
-  startDistance: 24,
-  minDistance: 6,
-  maxDistance: 24,
+  fov: 30,
+  startDistance: 4,
+  minDistance: 1.1,
+  maxDistance: 4,
   rotateSpeedPerAltitude: 0.05,
   zoomSpeedPerAltitude: 2,
   focusDistance: 8,
@@ -20,6 +20,9 @@ export const CAMERA = {
   orbitSecondsPerTurn: 60,
   orbitDistance: 7,
   releaseDurationMs: 500,
+  maxTiltDegrees: 80,
+  tiltDegreesPerPixel: 0.3,
+  orbitZoomStep: 1.1,
 };
 
 export const MOON = {

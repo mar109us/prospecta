@@ -23,3 +23,12 @@ export function slerpDirection(from, to, t) {
     z: from.z * fromWeight + to.z * toWeight,
   };
 }
+
+export function clampTilt(degrees, maxDegrees) {
+  return Math.min(Math.max(degrees, 0), maxDegrees);
+}
+
+export function zoomOrbitDistance(distance, wheelDelta, zoomRange) {
+  const zoomed = distance * Math.pow(zoomRange.step, wheelDelta / 100);
+  return Math.min(Math.max(zoomed, zoomRange.min), zoomRange.max);
+}

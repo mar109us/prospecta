@@ -1,6 +1,7 @@
 import * as THREE from "three";
 import { OrbitControls } from "three/addons/controls/OrbitControls.js";
 import { CAMERA, LIGHTS, MOON, RENDER } from "../settings.js";
+import { applyTilt, connectTiltDrag, createTiltState } from "./cameraTilt.js";
 import { connectFocusCancel, updateSpotFocus } from "./spotFocus.js";
 
 const MOON_RADIUS = 1;
@@ -64,13 +65,14 @@ function createControls(camera, renderer) {
    const controls = new OrbitControls(camera, renderer.domElement);
    controls.enableDamping = true;
    controls.enablePan = false;
+   controls.mouseButtons.RIGHT = null;
    controls.minDistance = CAMERA.minDistance;
    controls.maxDistance = CAMERA.maxDistance;
    return controls;
 }
 
 function updateControlSpeed(globe) {
-   const altitude = globe.camera.position.length() - MOON_RADIUS;
+   const altitude = globe.tilt.baseCamera.position.length() - MOON_RADIUS;
    globe.controls.rotateSpeed = Math.min(altitude * CAMERA.rotateSpeedPerAltitude, 1);
    globe.controls.zoomSpeed = Math.min(altitude * CAMERA.zoomSpeedPerAltitude, 1);
 }
@@ -83,13 +85,26 @@ function handleResize(globe) {
    globe.renderer.setSize(width, height);
 }
 
-function renderGlobe(globe) {
+function updateFreeCamera(globe) {
    updateControlSpeed(globe);
+   globe.controls.update();
+   applyTilt(globe);
+}
+
+function updateNearPlane(globe) {
+   const nearPlane = Math.max(0.01, globe.camera.position.length() - MOON_SURFACE_MARGIN);
+   if (nearPlane === globe.camera.near) return;
+   globe.camera.near = nearPlane;
+   globe.camera.updateProjectionMatrix();
+}
+
+function renderGlobe(globe) {
    if (globe.spotFocus) {
       updateSpotFocus(globe);
    } else {
-      globe.controls.update();
+      updateFreeCamera(globe);
    }
+   updateNearPlane(globe);
    for (const callback of globe.frameCallbacks) {
       callback();
    }
@@ -102,7 +117,8 @@ export function createGlobe(container) {
    const renderer = createRenderer(container);
    createLights(scene, camera);
    const moon = createMoon(scene);
-   const controls = createControls(camera, renderer);
+   const tilt = createTiltState(camera);
+   const controls = createControls(tilt.baseCamera, renderer);
 
    const globe = {
       scene: scene,
@@ -111,11 +127,13 @@ export function createGlobe(container) {
       moon: moon,
       controls: controls,
       spotFocus: null,
+      tilt: tilt,
       frameCallbacks: [],
    };
 
    window.addEventListener("resize", () => handleResize(globe));
    connectFocusCancel(globe);
+   connectTiltDrag(globe);
    return globe;
 }
 
