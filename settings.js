@@ -1,5 +1,5 @@
 export const DEBUG = {
-  isEnabled: false,
+  isEnabled: true,
 };
 
 export const RENDER = {
@@ -33,6 +33,7 @@ export const FIRST_PERSON = {
   fov: 70,
   nearMetres: 10,
   farKm: 400,
+  sprintMultiplier: 50,
 };
 
 export const MOON = {
@@ -78,7 +79,7 @@ export const RESOURCES = {
   layers: [
     {
       datasetName: "iron",
-      label: "Iron (FeO)",
+      label: "Iron",
       section: 1,
       colour: "#B7410E",
       toggleId: "iron-toggle",
@@ -88,7 +89,7 @@ export const RESOURCES = {
     },
     {
       datasetName: "titanium",
-      label: "Titanium (TiO₂)",
+      label: "Titanium",
       section: 1,
       note: "LROC WAC TiO₂ map (Sato et al. 2017), ±70° latitude.",
       colour: "#E0B000",
@@ -99,7 +100,7 @@ export const RESOURCES = {
     },
     {
       datasetName: "aluminium",
-      label: "Aluminium (Al₂O₃)",
+      label: "Aluminium",
       section: 1,
       colour: "#7E57C2",
       toggleId: "aluminium-toggle",
@@ -109,7 +110,7 @@ export const RESOURCES = {
     },
     {
       datasetName: "silicon",
-      label: "Silicon (SiO₂)",
+      label: "Silicon",
       section: 1,
       colour: "#2F7FD8",
       toggleId: "silicon-toggle",
@@ -119,7 +120,7 @@ export const RESOURCES = {
     },
     {
       datasetName: "hydrogen",
-      label: "Water ice (H)",
+      label: "Ice",
       section: 1,
       note: "Measured as hydrogen, which indicates likely water ice. 70–80°: Lunar Prospector (ppm). Beyond 80°: LRO LEND (neutron suppression %).",
       legendPrefix: "70–80°:",
@@ -138,7 +139,7 @@ export const RESOURCES = {
     },
     {
       datasetName: "thorium",
-      label: "Thorium (Th)",
+      label: "Thorium",
       section: 2,
       colour: "#26C6DA",
       toggleId: "thorium-toggle",
@@ -148,7 +149,7 @@ export const RESOURCES = {
     },
     {
       datasetName: "magnesium",
-      label: "Magnesium (MgO)",
+      label: "Magnesium",
       section: 2,
       colour: "#179C8E",
       toggleId: "magnesium-toggle",
@@ -158,7 +159,7 @@ export const RESOURCES = {
     },
     {
       datasetName: "calcium",
-      label: "Calcium (CaO)",
+      label: "Calcium",
       section: 2,
       colour: "#C0CA33",
       toggleId: "calcium-toggle",
@@ -168,7 +169,7 @@ export const RESOURCES = {
     },
     {
       datasetName: "potassium",
-      label: "Potassium (K)",
+      label: "Potassium",
       section: 2,
       colour: "#FF8A65",
       toggleId: "potassium-toggle",

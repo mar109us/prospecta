@@ -349,3 +349,18 @@ body {
   opacity: 0.5;
   cursor: not-allowed;
 }
+
+.debug-hud {
+  position: absolute;
+  z-index: 2;
+  right: 16px;
+  bottom: 56px;
+  margin: 0;
+  padding: 8px 10px;
+  color: white;
+  font-family: ui-monospace, monospace;
+  font-size: 12px;
+  background: rgba(0, 0, 0, 0.6);
+  border-radius: 4px;
+  pointer-events: none;
+}

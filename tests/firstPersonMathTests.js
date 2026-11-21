@@ -5,7 +5,13 @@ import {
   moveDirection,
   turnHeading,
   walk,
+  walkSpeed,
 } from "../view/firstPersonMath.js";
+
+const SPEED_SETTINGS = {
+  walkSpeedMetresPerSecond: 300,
+  sprintMultiplier: 50,
+};
 
 function check(testName, isPassing) {
   if (isPassing) {
@@ -121,7 +127,19 @@ function testLookingStraightUp() {
   check("pitch 90 looks straight up", isSameVector(lookDirection(walker, 90), walker.up));
 }
 
+function testNoSprintUsesBaseSpeed() {
+  check("no sprint uses base speed", walkSpeed(noKeys(), SPEED_SETTINGS) === 300);
+}
+
+function testSprintMultipliesSpeed() {
+  const keys = noKeys();
+  keys.sprint = true;
+  check("sprint multiplies walk speed", walkSpeed(keys, SPEED_SETTINGS) === 15000);
+}
+
 testNoKeysStandsStill();
+testNoSprintUsesBaseSpeed();
+testSprintMultipliesSpeed();
 testForwardWalksNorth();
 testCrossingThePoleKeepsWalking();
 testStrafeRightGoesEast();

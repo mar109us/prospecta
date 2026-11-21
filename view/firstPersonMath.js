@@ -20,6 +20,11 @@ export function metresToScene(metres) {
   return metres / MOON_RADIUS_METRES;
 }
 
+export function walkSpeed(keys, settings) {
+  if (keys.sprint) return settings.walkSpeedMetresPerSecond * settings.sprintMultiplier;
+  return settings.walkSpeedMetresPerSecond;
+}
+
 export function rightOf(walker) {
   return turnAround(walker.forward, walker.up, -QUARTER_TURN);
 }

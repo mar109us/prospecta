@@ -1,24 +1,12 @@
 import { FIRST_PERSON, MOON } from "../settings.js";
+import { distanceKm } from "../data/geo.js";
 import { lookRotation, toVector3, viewFromBase } from "./cameraView.js";
 import { flattenOnto, normalize } from "./spotOrbit.js";
 import { elevationToRadius, scenePositionToLatLon, surfaceElevation } from "./terrainMath.js";
-import {
-  clampPitch,
-  headingDegrees,
-  lookDirection,
-  metresToScene,
-  turnHeading,
-  walk,
-} from "./firstPersonMath.js";
+import { headingDegrees, lookDirection, metresToScene, walk, walkSpeed } from "./firstPersonMath.js";
+import { connectFirstPersonInput } from "./firstPersonInput.js";
 
 const MAX_FRAME_SECONDS = 0.1;
-
-const KEY_TO_MOVE = {
-  KeyW: "forward",
-  KeyS: "back",
-  KeyA: "left",
-  KeyD: "right",
-};
 
 function startView(globe) {
   if (globe.spotFocus) return globe.spotFocus.view;
@@ -46,12 +34,6 @@ function setLens(camera, lens) {
   camera.updateProjectionMatrix();
 }
 
-function releaseKeys(walker) {
-  for (const move in walker.keys) {
-    walker.keys[move] = false;
-  }
-}
-
 function logWalker(walker) {
   if (!walker) {
     console.log("First person off, orbit view is back");
@@ -63,6 +45,8 @@ function logWalker(walker) {
     lon: latLon.lon,
     headingDegrees: headingDegrees(walker),
     pitchDegrees: walker.pitchDegrees,
+    groundKm: walker.groundKm,
+    odometerKm: walker.odometerKm,
   });
 }
 
@@ -74,11 +58,14 @@ function enterFirstPerson(globe, grid) {
     up: up,
     forward: flattenOnto(view.away, up),
     pitchDegrees: 0,
+    groundKm: 0,
+    odometerKm: 0,
     keys: {
       forward: false,
       back: false,
       left: false,
       right: false,
+      sprint: false,
     },
     lastTime: performance.now(),
     saved: saveCamera(globe),
@@ -107,14 +94,14 @@ function exitFirstPerson(globe) {
   logWalker(globe.firstPerson);
 }
 
-function groundRadius(walker) {
+function groundElevationKm(walker) {
   const latLon = scenePositionToLatLon(walker.up.x, walker.up.y, walker.up.z);
-  const km = surfaceElevation(walker.grid, latLon.lat, latLon.lon);
-  return elevationToRadius(km, MOON.heightExaggeration);
+  return surfaceElevation(walker.grid, latLon.lat, latLon.lon);
 }
 
 function placeCamera(camera, walker) {
-  const height = groundRadius(walker) + metresToScene(FIRST_PERSON.eyeHeightMetres);
+  const groundRadius = elevationToRadius(walker.groundKm, MOON.heightExaggeration);
+  const height = groundRadius + metresToScene(FIRST_PERSON.eyeHeightMetres);
   const position = toVector3(walker.up).multiplyScalar(height);
   const target = position.clone().add(toVector3(lookDirection(walker, walker.pitchDegrees)));
   camera.position.copy(position);
@@ -127,47 +114,13 @@ export function updateFirstPerson(globe) {
   const seconds = Math.min((now - walker.lastTime) / 1000, MAX_FRAME_SECONDS);
   walker.lastTime = now;
 
-  const distance = metresToScene(FIRST_PERSON.walkSpeedMetresPerSecond * seconds);
+  const distance = metresToScene(walkSpeed(walker.keys, FIRST_PERSON) * seconds);
   const moved = walk(walker, walker.keys, distance);
+  walker.odometerKm += distanceKm(walker.up, moved.up);
   walker.up = moved.up;
   walker.forward = moved.forward;
+  walker.groundKm = groundElevationKm(walker);
   placeCamera(globe.camera, walker);
-}
-
-function setKey(globe, code, isPressed) {
-  const walker = globe.firstPerson;
-  if (!walker) return;
-  const move = KEY_TO_MOVE[code];
-  if (!move) return;
-  walker.keys[move] = isPressed;
-  if (!isPressed) logWalker(walker);
-}
-
-function connectKeys(globe) {
-  document.addEventListener("keydown", (event) => setKey(globe, event.code, true));
-  document.addEventListener("keyup", (event) => setKey(globe, event.code, false));
-  window.addEventListener("blur", () => {
-    if (globe.firstPerson) releaseKeys(globe.firstPerson);
-  });
-}
-
-function look(walker, movementX, movementY) {
-  const degreesPerPixel = FIRST_PERSON.mouseDegreesPerPixel;
-  walker.forward = turnHeading(walker, movementX * degreesPerPixel);
-  const pitch = walker.pitchDegrees - movementY * degreesPerPixel;
-  walker.pitchDegrees = clampPitch(pitch, FIRST_PERSON.maxPitchDegrees);
-}
-
-function connectMouseLook(globe) {
-  const canvas = globe.renderer.domElement;
-  canvas.addEventListener("click", () => {
-    if (globe.firstPerson) canvas.requestPointerLock();
-  });
-  document.addEventListener("mousemove", (event) => {
-    if (!globe.firstPerson) return;
-    if (document.pointerLockElement !== canvas) return;
-    look(globe.firstPerson, event.movementX, event.movementY);
-  });
 }
 
 function toggleFirstPerson(globe, grid, button) {
@@ -193,6 +146,5 @@ export function connectFirstPerson(globe, grid) {
   }
   button.disabled = false;
   button.addEventListener("click", () => toggleFirstPerson(globe, grid, button));
-  connectKeys(globe);
-  connectMouseLook(globe);
+  connectFirstPersonInput(globe, logWalker);
 }

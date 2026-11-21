@@ -22,6 +22,7 @@ import { precompileMeshes } from "./view/overlay.js";
 import { connectLandingSearch } from "./app/search.js";
 import { createSunlightLayer, sunlightToggle } from "./app/sunlightLayer.js";
 import { connectDebug } from "./debug/logState.js";
+import { connectFirstPersonHud } from "./debug/firstPersonHud.js";
 import { DEBUG, DETAIL, MOON, RESOURCES, SLOPE, SUNLIGHT, TEXTURES } from "./settings.js";
 
 const RESOURCE_LAYERS = RESOURCES.layers;
@@ -144,6 +145,7 @@ async function main() {
     resourceGrids: [],
   };
   if (DEBUG.isEnabled) connectDebug(globe);
+  if (DEBUG.isEnabled) connectFirstPersonHud(globe);
   startRenderLoop(globe);
 
   try {
