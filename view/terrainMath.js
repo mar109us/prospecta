@@ -4,6 +4,10 @@ export function elevationToRadius(km, exaggeration) {
   return 1 + (km / MOON_RADIUS_KM) * exaggeration;
 }
 
+export function radiusToElevation(radius, exaggeration) {
+  return ((radius - 1) * MOON_RADIUS_KM) / exaggeration;
+}
+
 export function rowAverage(grid, row) {
   let total = 0;
   for (let column = 0; column < grid.width; column++) {

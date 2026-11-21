@@ -7,7 +7,8 @@ function hudLines(walker) {
     `lat       ${latLon.lat.toFixed(3)}°`,
     `lon       ${latLon.lon.toFixed(3)}°`,
     `heading   ${headingDegrees(walker).toFixed(1)}°`,
-    `ground    ${walker.groundKm.toFixed(2)} km`,
+    `ground    ${walker.groundKm.toFixed(3)} km`,
+    `source    ${walker.groundSource}`,
     `odometer  ${walker.odometerKm.toFixed(2)} km`,
   ];
 }

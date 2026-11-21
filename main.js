@@ -23,6 +23,7 @@ import { connectLandingSearch } from "./app/search.js";
 import { createSunlightLayer, sunlightToggle } from "./app/sunlightLayer.js";
 import { connectDebug } from "./debug/logState.js";
 import { connectFirstPersonHud } from "./debug/firstPersonHud.js";
+import { connectCraterJump } from "./debug/craterJump.js";
 import { DEBUG, DETAIL, MOON, RESOURCES, SLOPE, SUNLIGHT, TEXTURES } from "./settings.js";
 
 const RESOURCE_LAYERS = RESOURCES.layers;
@@ -162,6 +163,7 @@ async function main() {
     showError(`The terrain could not be shown. ${error.message}`);
   }
   connectFirstPerson(globe, loaded.elevation);
+  if (DEBUG.isEnabled) connectCraterJump(globe, loaded.elevation);
 
   let resources = null;
   try {

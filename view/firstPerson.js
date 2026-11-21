@@ -1,16 +1,27 @@
-import { FIRST_PERSON, MOON } from "../settings.js";
+import { FIRST_PERSON } from "../settings.js";
 import { distanceKm } from "../data/geo.js";
 import { lookRotation, toVector3, viewFromBase } from "./cameraView.js";
 import { flattenOnto, normalize } from "./spotOrbit.js";
-import { elevationToRadius, scenePositionToLatLon, surfaceElevation } from "./terrainMath.js";
+import { scenePositionToLatLon } from "./terrainMath.js";
+import { updateGround } from "./firstPersonGround.js";
 import { headingDegrees, lookDirection, metresToScene, walk, walkSpeed } from "./firstPersonMath.js";
 import { connectFirstPersonInput } from "./firstPersonInput.js";
 
 const MAX_FRAME_SECONDS = 0.1;
 
-function startView(globe) {
-  if (globe.spotFocus) return globe.spotFocus.view;
-  return viewFromBase(globe.tilt);
+function screenCentreStart(globe) {
+  let view = viewFromBase(globe.tilt);
+  if (globe.spotFocus) view = globe.spotFocus.view;
+  const up = normalize(view.point);
+  return {
+    up: up,
+    forward: flattenOnto(view.away, up),
+  };
+}
+
+function setButtonLabel(text) {
+  const button = document.getElementById("walk-button");
+  if (button) button.textContent = text;
 }
 
 function saveCamera(globe) {
@@ -46,19 +57,20 @@ function logWalker(walker) {
     headingDegrees: headingDegrees(walker),
     pitchDegrees: walker.pitchDegrees,
     groundKm: walker.groundKm,
+    groundSource: walker.groundSource,
     odometerKm: walker.odometerKm,
   });
 }
 
-function enterFirstPerson(globe, grid) {
-  const view = startView(globe);
-  const up = normalize(view.point);
+function enterFirstPerson(globe, grid, start) {
   globe.firstPerson = {
     grid: grid,
-    up: up,
-    forward: flattenOnto(view.away, up),
+    up: start.up,
+    forward: start.forward,
     pitchDegrees: 0,
     groundKm: 0,
+    groundRadius: 1,
+    groundSource: "coarse",
     odometerKm: 0,
     keys: {
       forward: false,
@@ -77,7 +89,24 @@ function enterFirstPerson(globe, grid) {
     near: metresToScene(FIRST_PERSON.nearMetres),
     far: metresToScene(FIRST_PERSON.farKm * 1000),
   });
+  setButtonLabel("exit");
   logWalker(globe.firstPerson);
+}
+
+function moveWalker(walker, start) {
+  walker.up = start.up;
+  walker.forward = start.forward;
+  walker.pitchDegrees = 0;
+  walker.odometerKm = 0;
+  logWalker(walker);
+}
+
+export function enterFirstPersonAt(globe, grid, start) {
+  if (globe.firstPerson) {
+    moveWalker(globe.firstPerson, start);
+    return;
+  }
+  enterFirstPerson(globe, grid, start);
 }
 
 function exitFirstPerson(globe) {
@@ -91,17 +120,12 @@ function exitFirstPerson(globe) {
   globe.spotFocus = null;
   globe.controls.enabled = true;
   if (document.pointerLockElement) document.exitPointerLock();
+  setButtonLabel("walk");
   logWalker(globe.firstPerson);
 }
 
-function groundElevationKm(walker) {
-  const latLon = scenePositionToLatLon(walker.up.x, walker.up.y, walker.up.z);
-  return surfaceElevation(walker.grid, latLon.lat, latLon.lon);
-}
-
 function placeCamera(camera, walker) {
-  const groundRadius = elevationToRadius(walker.groundKm, MOON.heightExaggeration);
-  const height = groundRadius + metresToScene(FIRST_PERSON.eyeHeightMetres);
+  const height = walker.groundRadius + metresToScene(FIRST_PERSON.eyeHeightMetres);
   const position = toVector3(walker.up).multiplyScalar(height);
   const target = position.clone().add(toVector3(lookDirection(walker, walker.pitchDegrees)));
   camera.position.copy(position);
@@ -119,7 +143,7 @@ export function updateFirstPerson(globe) {
   walker.odometerKm += distanceKm(walker.up, moved.up);
   walker.up = moved.up;
   walker.forward = moved.forward;
-  walker.groundKm = groundElevationKm(walker);
+  updateGround(globe, walker);
   placeCamera(globe.camera, walker);
 }
 
@@ -127,11 +151,9 @@ function toggleFirstPerson(globe, grid, button) {
   button.blur();
   if (globe.firstPerson) {
     exitFirstPerson(globe);
-    button.textContent = "walk";
     return;
   }
-  enterFirstPerson(globe, grid);
-  button.textContent = "exit";
+  enterFirstPerson(globe, grid, screenCentreStart(globe));
 }
 
 export function connectFirstPerson(globe, grid) {

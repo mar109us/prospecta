@@ -81,9 +81,31 @@ export function lookDirection(walker, pitchDegrees) {
   };
 }
 
+function northOf(up) {
+  return flattenOnto(WORLD_UP, up);
+}
+
+export function eastOf(up) {
+  return turnAround(northOf(up), up, -QUARTER_TURN);
+}
+
+export function approachStart(centreUp, angle) {
+  const east = eastOf(centreUp);
+  const west = {
+    x: -east.x,
+    y: -east.y,
+    z: -east.z,
+  };
+  const centre = {
+    up: centreUp,
+    forward: east,
+  };
+  return walkStep(centre, west, angle);
+}
+
 export function headingDegrees(walker) {
-  const north = flattenOnto(WORLD_UP, walker.up);
-  const east = turnAround(north, walker.up, -QUARTER_TURN);
+  const north = northOf(walker.up);
+  const east = eastOf(walker.up);
   const angle = Math.atan2(dot(walker.forward, east), dot(walker.forward, north));
   let degrees = (angle * 180) / Math.PI;
   if (degrees < 0) degrees += 360;

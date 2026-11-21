@@ -1,4 +1,5 @@
 import {
+  approachStart,
   clampPitch,
   headingDegrees,
   lookDirection,
@@ -137,7 +138,28 @@ function testSprintMultipliesSpeed() {
   check("sprint multiplies walk speed", walkSpeed(keys, SPEED_SETTINGS) === 15000);
 }
 
+function testApproachStartIsTheChosenDistanceAway() {
+  const centreUp = walkerOnEquatorFacingNorth().up;
+  const start = approachStart(centreUp, 0.1);
+  const angle = Math.acos(start.up.x * centreUp.x + start.up.y * centreUp.y + start.up.z * centreUp.z);
+  check("approach start is the chosen distance from the centre", isClose(angle, 0.1));
+}
+
+function testWalkingForwardFromStartReachesCentre() {
+  const centreUp = {
+    x: 0.6,
+    y: -0.8,
+    z: 0,
+  };
+  const keys = noKeys();
+  keys.forward = true;
+  const arrived = walk(approachStart(centreUp, 0.1), keys, 0.1);
+  check("walking forward from the start reaches the centre", isSameVector(arrived.up, centreUp));
+}
+
 testNoKeysStandsStill();
+testApproachStartIsTheChosenDistanceAway();
+testWalkingForwardFromStartReachesCentre();
 testNoSprintUsesBaseSpeed();
 testSprintMultipliesSpeed();
 testForwardWalksNorth();

@@ -26,14 +26,38 @@ export const CAMERA = {
 };
 
 export const FIRST_PERSON = {
-  eyeHeightMetres: 300,
+  eyeHeightMetres: 2,
   walkSpeedMetresPerSecond: 300,
   mouseDegreesPerPixel: 0.15,
   maxPitchDegrees: 85,
   fov: 70,
-  nearMetres: 10,
+  nearMetres: 0.5,
   farKm: 400,
   sprintMultiplier: 50,
+};
+
+export const CRATERS = {
+  approachKm: 20,
+  list: [
+    {
+      name: "Copernicus",
+      lat: 9.62,
+      lon: -20.08,
+      diameterKm: 93,
+    },
+    {
+      name: "Clavius",
+      lat: -58.8,
+      lon: -14.1,
+      diameterKm: 225,
+    },
+    {
+      name: "Tycho",
+      lat: -43.3,
+      lon: -11.2,
+      diameterKm: 85,
+    },
+  ],
 };
 
 export const MOON = {

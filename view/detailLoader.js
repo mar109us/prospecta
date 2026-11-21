@@ -159,6 +159,7 @@ export async function connectDetail(globe, context, onError) {
     wantedIds: [],
     maskedIds: "",
   };
+  globe.detail = detail;
   globe.frameCallbacks.push(() => updateDetail(globe, detail));
   console.log(`Detail tiles: ${listing.tiles.length} tiles available`);
 }
