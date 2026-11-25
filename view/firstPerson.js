@@ -5,6 +5,7 @@ import { flattenOnto, normalize } from "./spotOrbit.js";
 import { scenePositionToLatLon } from "./terrainMath.js";
 import { updateGround } from "./firstPersonGround.js";
 import { hideGroundPatch, updateGroundPatch } from "./groundPatch.js";
+import { enterGroundSun, exitGroundSun, updateGroundSun } from "./firstPersonSun.js";
 import { headingDegrees, lookDirection, metresToScene, walk, walkSpeed } from "./firstPersonMath.js";
 import { connectFirstPersonInput } from "./firstPersonInput.js";
 
@@ -90,6 +91,7 @@ function enterFirstPerson(globe, grid, start) {
     near: metresToScene(FIRST_PERSON.nearMetres),
     far: metresToScene(FIRST_PERSON.farKm * 1000),
   });
+  enterGroundSun(globe);
   setButtonLabel("exit");
   logWalker(globe.firstPerson);
 }
@@ -122,6 +124,7 @@ function exitFirstPerson(globe) {
   globe.controls.enabled = true;
   if (document.pointerLockElement) document.exitPointerLock();
   hideGroundPatch(globe);
+  exitGroundSun(globe);
   setButtonLabel("walk");
   logWalker(globe.firstPerson);
 }
@@ -147,6 +150,7 @@ export function updateFirstPerson(globe) {
   walker.forward = moved.forward;
   updateGround(globe, walker);
   updateGroundPatch(globe, walker);
+  updateGroundSun(globe, walker);
   placeCamera(globe.camera, walker);
 }
 

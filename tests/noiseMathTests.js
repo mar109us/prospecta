@@ -2,12 +2,12 @@ import { fractalNoise, periodicNoise2, valueNoise3 } from "../view/noiseMath.js"
 
 const OCTAVES = [
   {
-    wavelengthMetres: 100,
-    amplitudeMetres: 2,
+    widthMetres: 100,
+    heightMetres: 2,
   },
   {
-    wavelengthMetres: 10,
-    amplitudeMetres: 0.5,
+    widthMetres: 10,
+    heightMetres: 0.5,
   },
 ];
 

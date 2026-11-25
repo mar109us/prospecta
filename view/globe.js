@@ -47,6 +47,7 @@ function createLights(scene, camera) {
 
    const ambientLight = new THREE.AmbientLight("white", LIGHTS.ambientIntensity);
    scene.add(ambientLight);
+   return sunLight;
 }
 
 function createMoon(scene) {
@@ -120,7 +121,7 @@ export function createGlobe(container) {
    const scene = createScene();
    const camera = createCamera();
    const renderer = createRenderer(container);
-   createLights(scene, camera);
+   const sunLight = createLights(scene, camera);
    const moon = createMoon(scene);
    const detailMask = createDetailMask();
    applyMoonMask(moon.material, detailMask);
@@ -131,6 +132,7 @@ export function createGlobe(container) {
       scene: scene,
       camera: camera,
       renderer: renderer,
+      sunLight: sunLight,
       moon: moon,
       controls: controls,
       spotFocus: null,

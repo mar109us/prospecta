@@ -41,10 +41,10 @@ export function fractalNoise(point, octaves) {
   for (let index = 0; index < octaves.length; index++) {
     const octave = octaves[index];
     const shift = index * 17.3;
-    const x = point.x / octave.wavelengthMetres + shift;
-    const y = point.y / octave.wavelengthMetres + shift;
-    const z = point.z / octave.wavelengthMetres + shift;
-    total += valueNoise3(x, y, z) * octave.amplitudeMetres;
+    const x = point.x / octave.widthMetres + shift;
+    const y = point.y / octave.widthMetres + shift;
+    const z = point.z / octave.widthMetres + shift;
+    total += valueNoise3(x, y, z) * octave.heightMetres;
   }
   return total;
 }

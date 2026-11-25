@@ -1,7 +1,7 @@
 import * as THREE from "three";
 import { periodicFractal2 } from "./noiseMath.js";
 
-export function createGrainTexture(size, periods) {
+export function createGrainTexture(size, periods, anisotropy) {
   const pixels = new Uint8Array(size * size * 4);
   for (let row = 0; row < size; row++) {
     for (let column = 0; column < size; column++) {
@@ -20,6 +20,7 @@ export function createGrainTexture(size, periods) {
   texture.magFilter = THREE.LinearFilter;
   texture.minFilter = THREE.LinearMipmapLinearFilter;
   texture.generateMipmaps = true;
+  texture.anisotropy = anisotropy;
   texture.needsUpdate = true;
   return texture;
 }

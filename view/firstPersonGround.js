@@ -39,7 +39,7 @@ export function updateGround(globe, walker) {
   if (detailRadius(globe.detail, latLon) !== null) walker.groundSource = "detail";
 
   let radius = surfaceRadiusAt(globe, walker.grid, latLon);
-  if (GROUND_DETAIL.isEnabled) radius += metresToScene(noiseAt(walker.up, GROUND_DETAIL.octaves));
+  if (GROUND_DETAIL.isEnabled) radius += metresToScene(noiseAt(walker.up, GROUND_DETAIL.hills.sizes));
   walker.groundRadius = radius;
   walker.groundKm = radiusToElevation(radius, MOON.heightExaggeration);
 }

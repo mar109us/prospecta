@@ -27,46 +27,56 @@ export const CAMERA = {
 
 export const FIRST_PERSON = {
   eyeHeightMetres: 2,
-  walkSpeedMetresPerSecond: 300,
+  walkSpeedMetresPerSecond: 3,
   mouseDegreesPerPixel: 0.15,
   maxPitchDegrees: 85,
   fov: 70,
   nearMetres: 0.5,
-  farKm: 400,
+  farKm: 1000,
   sprintMultiplier: 50,
+  sunElevationDegrees: 30,
+  sunAzimuthDegrees: 90,
 };
 
 export const GROUND_DETAIL = {
   isEnabled: true,
-  patchMetres: 1000,
-  patchSegments: 256,
-  rebuildMetres: 100,
-  rebuildToleranceMetres: 1,
-  fadeStart: 0.6,
-  fadeEnd: 0.95,
-  octaves: [
-    {
-      wavelengthMetres: 400,
-      amplitudeMetres: 8,
-    },
-    {
-      wavelengthMetres: 100,
-      amplitudeMetres: 2,
-    },
-    {
-      wavelengthMetres: 30,
-      amplitudeMetres: 0.6,
-    },
-    {
-      wavelengthMetres: 10,
-      amplitudeMetres: 0.2,
-    },
-  ],
-  grainTileMetres: 4,
-  grainTextureSize: 256,
-  grainPeriods: [4, 8, 16, 32],
-  grainAnchorKm: 50,
-  bumpScale: 2,
+  mesh: {
+    widthMetres: 1000,
+    squaresPerSide: 512,
+    rebuildAfterWalkingMetres: 50,
+    rebuildIfGroundShiftsMetres: 2,
+  },
+  hills: {
+    flattenFrom: 0.6,
+    flattenUntil: 0.95,
+    sizes: [
+      {
+        widthMetres: 400,
+        heightMetres: 4,
+      },
+      {
+        widthMetres: 100,
+        heightMetres: 3,
+      },
+      {
+        widthMetres: 30,
+        heightMetres: 2,
+      },
+      {
+        widthMetres: 10,
+        heightMetres: 1,
+      },
+    ],
+  },
+  roughness: {
+    bumpHeightMetres: 0.3,
+    repeatsEveryMetres: 16,
+    pixels: 512,
+    bumpsPerRepeat: [8, 16, 32, 64, 128],
+    bigPatchesScale: 0.23,
+    bigPatchesStrength: 0.6,
+    realignAfterKm: 100,
+  },
 };
 
 export const CRATERS = {

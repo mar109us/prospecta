@@ -4,6 +4,7 @@ import {
   headingDegrees,
   lookDirection,
   moveDirection,
+  sunDirection,
   turnHeading,
   walk,
   walkSpeed,
@@ -158,6 +159,39 @@ function testWalkingForwardFromStartReachesCentre() {
 }
 
 testNoKeysStandsStill();
+const SUN_FRAME = {
+  up: {
+    x: 0,
+    y: 0,
+    z: 1,
+  },
+  east: {
+    x: 1,
+    y: 0,
+    z: 0,
+  },
+  north: {
+    x: 0,
+    y: 1,
+    z: 0,
+  },
+};
+
+function testSunIsAtChosenHeight() {
+  const sun = sunDirection(SUN_FRAME, 30, 90);
+  check("sun is at the chosen height above the horizon", Math.abs(sun.z - 0.5) < 1e-9);
+}
+
+function testSunAzimuthNinetyIsEast() {
+  const sun = sunDirection(SUN_FRAME, 30, 90);
+  check("sun at azimuth 90 is in the east", sun.x > 0.8 && Math.abs(sun.y) < 1e-9);
+}
+
+function testSunDirectionHasLengthOne() {
+  const sun = sunDirection(SUN_FRAME, 30, 40);
+  check("sun direction has length 1", Math.abs(Math.hypot(sun.x, sun.y, sun.z) - 1) < 1e-9);
+}
+
 testApproachStartIsTheChosenDistanceAway();
 testWalkingForwardFromStartReachesCentre();
 testNoSprintUsesBaseSpeed();
@@ -170,3 +204,6 @@ testOppositeKeysCancel();
 testTurnRightFacesEast();
 testPitchIsClamped();
 testLookingStraightUp();
+testSunIsAtChosenHeight();
+testSunAzimuthNinetyIsEast();
+testSunDirectionHasLengthOne();

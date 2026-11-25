@@ -3,13 +3,23 @@ import { distanceKm } from "../data/geo.js";
 import { GROUND_DETAIL } from "../settings.js";
 import { surfaceRadiusAt } from "./firstPersonGround.js";
 import { metresToScene, sceneToMetres } from "./firstPersonMath.js";
+import { applyGrainShader, createGrainUniforms } from "./grainShader.js";
 import { createGrainTexture } from "./grainTexture.js";
-import { edgeFade, grainUv, noiseAt, patchFrame, patchPointDirection } from "./groundPatchMath.js";
+import {
+  edgeFade,
+  grainUv,
+  noiseAt,
+  patchFrame,
+  patchPointDirection,
+  patchPointMetres,
+  secondGrainOffset,
+  snapToGrid,
+} from "./groundPatchMath.js";
 import { scenePositionToLatLon } from "./terrainMath.js";
 import { fillIndices } from "./tileGeometryMath.js";
 
-function createPatchMesh(globe) {
-  const segments = GROUND_DETAIL.patchSegments;
+function createPatchMesh(globe, grainUniforms) {
+  const segments = GROUND_DETAIL.mesh.squaresPerSide;
   const vertexCount = (segments + 1) * (segments + 1);
   const indices = new Uint32Array(segments * segments * 6);
   fillIndices(segments, indices);
@@ -20,17 +30,22 @@ function createPatchMesh(globe) {
   geometry.setAttribute("uv1", new THREE.BufferAttribute(new Float32Array(vertexCount * 2), 2));
   geometry.setIndex(new THREE.BufferAttribute(indices, 1));
 
-  const grain = createGrainTexture(GROUND_DETAIL.grainTextureSize, GROUND_DETAIL.grainPeriods);
+  const grain = createGrainTexture(
+    GROUND_DETAIL.roughness.pixels,
+    GROUND_DETAIL.roughness.bumpsPerRepeat,
+    globe.renderer.capabilities.getMaxAnisotropy(),
+  );
   grain.channel = 1;
   const material = new THREE.MeshStandardMaterial({
     map: globe.moon.material.map,
     bumpMap: grain,
-    bumpScale: GROUND_DETAIL.bumpScale,
+    bumpScale: GROUND_DETAIL.roughness.bumpHeightMetres,
     roughness: 1,
     polygonOffset: true,
     polygonOffsetFactor: -1,
     polygonOffsetUnits: -1,
   });
+  applyGrainShader(material, grainUniforms);
   const mesh = new THREE.Mesh(geometry, material);
   mesh.visible = false;
   globe.scene.add(mesh);
@@ -43,50 +58,65 @@ function latLonOf(direction) {
 
 function needsRebuild(globe, patch, walker) {
   if (!patch.centreUp) return true;
-  if (distanceKm(patch.centreUp, walker.up) * 1000 > GROUND_DETAIL.rebuildMetres) return true;
+  if (distanceKm(patch.centreUp, walker.up) * 1000 > GROUND_DETAIL.mesh.rebuildAfterWalkingMetres) return true;
   const radiusNow = surfaceRadiusAt(globe, walker.grid, latLonOf(patch.centreUp));
   const changedMetres = sceneToMetres(Math.abs(radiusNow - patch.centreRadius));
-  if (changedMetres > GROUND_DETAIL.rebuildToleranceMetres) return true;
+  if (changedMetres > GROUND_DETAIL.mesh.rebuildIfGroundShiftsMetres) return true;
   return false;
 }
 
 function updateAnchor(patch, up) {
-  if (patch.anchor && distanceKm(patch.anchor.up, up) < GROUND_DETAIL.grainAnchorKm) return;
+  if (patch.anchor && distanceKm(patch.anchor.up, up) < GROUND_DETAIL.roughness.realignAfterKm) return;
   patch.anchor = patchFrame(up);
   console.log("Ground grain anchor moved");
 }
 
 function buildVertex(build, row, column) {
-  const segments = GROUND_DETAIL.patchSegments;
-  const eastMetres = (column / segments - 0.5) * GROUND_DETAIL.patchMetres;
-  const northMetres = (0.5 - row / segments) * GROUND_DETAIL.patchMetres;
-  const direction = patchPointDirection(build.frame, eastMetres, northMetres);
+  const segments = GROUND_DETAIL.mesh.squaresPerSide;
+  const eastMetres = (column / segments - 0.5) * GROUND_DETAIL.mesh.widthMetres;
+  const northMetres = (0.5 - row / segments) * GROUND_DETAIL.mesh.widthMetres;
+  const direction = patchPointDirection(
+    build.anchor,
+    build.centre.eastMetres + eastMetres,
+    build.centre.northMetres + northMetres,
+  );
   const latLon = latLonOf(direction);
 
-  const ratio = Math.hypot(eastMetres, northMetres) / (GROUND_DETAIL.patchMetres / 2);
-  const noiseMetres = noiseAt(direction, GROUND_DETAIL.octaves) * edgeFade(ratio, GROUND_DETAIL);
+  const ratio = Math.hypot(eastMetres, northMetres) / (GROUND_DETAIL.mesh.widthMetres / 2);
+  const noiseMetres = noiseAt(direction, GROUND_DETAIL.hills.sizes) * edgeFade(ratio, GROUND_DETAIL.hills);
   const radius = surfaceRadiusAt(build.globe, build.grid, latLon) + metresToScene(noiseMetres);
-  const grain = grainUv(build.anchor, direction, GROUND_DETAIL.grainTileMetres);
+  const grain = grainUv(build.anchor, direction, GROUND_DETAIL.roughness.repeatsEveryMetres);
 
   const index = row * (segments + 1) + column;
   const attributes = build.attributes;
   attributes.position.setXYZ(
     index,
-    direction.x * radius - build.frame.up.x,
-    direction.y * radius - build.frame.up.y,
-    direction.z * radius - build.frame.up.z,
+    direction.x * radius - build.centreUp.x,
+    direction.y * radius - build.centreUp.y,
+    direction.z * radius - build.centreUp.z,
   );
   attributes.uv.setXY(index, (latLon.lon + 180) / 360, (latLon.lat + 90) / 180);
   attributes.uv1.setXY(index, grain.u - build.grainOffset.u, grain.v - build.grainOffset.v);
 }
 
+function snappedCentre(anchor, up) {
+  const spacingMetres = GROUND_DETAIL.mesh.widthMetres / GROUND_DETAIL.mesh.squaresPerSide;
+  const exact = patchPointMetres(anchor, up);
+  return {
+    eastMetres: snapToGrid(exact.eastMetres, spacingMetres),
+    northMetres: snapToGrid(exact.northMetres, spacingMetres),
+  };
+}
+
 function rebuildPatch(globe, patch, walker) {
   const startTime = performance.now();
-  const centreGrain = grainUv(patch.anchor, walker.up, GROUND_DETAIL.grainTileMetres);
+  const centre = snappedCentre(patch.anchor, walker.up);
+  const centreGrain = grainUv(patch.anchor, walker.up, GROUND_DETAIL.roughness.repeatsEveryMetres);
   const build = {
     globe: globe,
     grid: walker.grid,
-    frame: patchFrame(walker.up),
+    centre: centre,
+    centreUp: patchPointDirection(patch.anchor, centre.eastMetres, centre.northMetres),
     anchor: patch.anchor,
     grainOffset: {
       u: Math.floor(centreGrain.u),
@@ -94,12 +124,14 @@ function rebuildPatch(globe, patch, walker) {
     },
     attributes: patch.mesh.geometry.attributes,
   };
-  for (let row = 0; row <= GROUND_DETAIL.patchSegments; row++) {
-    for (let column = 0; column <= GROUND_DETAIL.patchSegments; column++) {
+  for (let row = 0; row <= GROUND_DETAIL.mesh.squaresPerSide; row++) {
+    for (let column = 0; column <= GROUND_DETAIL.mesh.squaresPerSide; column++) {
       buildVertex(build, row, column);
     }
   }
-  finishGeometry(patch.mesh, walker.up);
+  finishGeometry(patch.mesh, build.centreUp);
+  const secondOffset = secondGrainOffset(build.grainOffset, GROUND_DETAIL.roughness.bigPatchesScale);
+  patch.grainUniforms.grainSecondOffset.value.set(secondOffset.u, secondOffset.v);
 
   patch.centreUp = walker.up;
   patch.centreRadius = surfaceRadiusAt(globe, walker.grid, latLonOf(walker.up));
@@ -120,8 +152,10 @@ function finishGeometry(mesh, up) {
 export function updateGroundPatch(globe, walker) {
   if (!GROUND_DETAIL.isEnabled) return;
   if (!globe.groundPatch) {
+    const grainUniforms = createGrainUniforms();
     globe.groundPatch = {
-      mesh: createPatchMesh(globe),
+      mesh: createPatchMesh(globe, grainUniforms),
+      grainUniforms: grainUniforms,
       centreUp: null,
       centreRadius: 0,
       anchor: null,

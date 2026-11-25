@@ -115,3 +115,16 @@ export function headingDegrees(walker) {
   if (degrees < 0) degrees += 360;
   return degrees;
 }
+
+export function sunDirection(frame, elevationDegrees, azimuthDegrees) {
+  const elevation = toRadians(elevationDegrees);
+  const azimuth = toRadians(azimuthDegrees);
+  const upPart = Math.sin(elevation);
+  const northPart = Math.cos(elevation) * Math.cos(azimuth);
+  const eastPart = Math.cos(elevation) * Math.sin(azimuth);
+  return {
+    x: frame.up.x * upPart + frame.north.x * northPart + frame.east.x * eastPart,
+    y: frame.up.y * upPart + frame.north.y * northPart + frame.east.y * eastPart,
+    z: frame.up.z * upPart + frame.north.z * northPart + frame.east.z * eastPart,
+  };
+}
