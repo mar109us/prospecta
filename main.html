@@ -26,101 +26,114 @@
          src="main.js"></script>
    </head>
    <body>
-      <header class="logo">
-         <img
-            src="assets/logo.svg"
-            alt="Prospecta"
-            width="194"
-            height="40" />
-      </header>
-
       <main
          id="globe"
          class="globe"></main>
 
-      <aside class="panel">
-         <section class="panel__search">
-            <button
-               type="button"
-               id="search-button"
-               class="panel__button">
-               search
-            </button>
-            <p
-               id="search-status"
-               class="panel__status"
-               aria-live="polite"></p>
-         </section>
-         <section
-            id="resources-category"
-            class="panel__category">
-            <div
-               id="resource-options"
-               class="panel__options"></div>
-            <button
-               type="button"
-               id="clear-resources"
-               class="panel__clear">
-               clear
-            </button>
-         </section>
-         <p
-            id="error"
-            class="panel__error"
-            role="alert"
-            hidden></p>
-      </aside>
+      <div class="sidebar">
+         <header class="logo">
+            <img
+               src="assets/logo.svg"
+               alt="Prospecta"
+               width="194"
+               height="40" />
+         </header>
 
-      <aside class="panel panel--terrain">
-         <section
-            id="terrain-category"
-            class="panel__category">
-            <div class="panel__row">
-               <div class="panel__layer">
-                  <div
-                     id="flat-legend"
-                     class="legend"></div>
-                  <div class="panel__option">
-                     <input
-                        type="checkbox"
-                        id="flat-toggle" />
-                     <label for="flat-toggle">
-                        <span class="panel__swatch"></span>
-                        <span>Flat</span>
-                     </label>
+         <button
+            type="button"
+            id="panel-toggle"
+            class="panel-toggle"
+            aria-expanded="false"
+            aria-controls="resource-panel">
+            layers
+         </button>
+
+         <aside
+            id="resource-panel"
+            class="panel panel--resources">
+            <section class="panel__search">
+               <button
+                  type="button"
+                  id="search-button"
+                  class="panel__button">
+                  search
+               </button>
+               <p
+                  id="search-status"
+                  class="panel__status"
+                  aria-live="polite"></p>
+            </section>
+            <section
+               id="resources-category"
+               class="panel__category">
+               <div
+                  id="resource-options"
+                  class="panel__options"></div>
+               <button
+                  type="button"
+                  id="clear-resources"
+                  class="panel__clear">
+                  clear
+               </button>
+            </section>
+            <p
+               id="error"
+               class="panel__error"
+               role="alert"
+               hidden></p>
+         </aside>
+
+         <aside class="panel panel--terrain">
+            <section
+               id="terrain-category"
+               class="panel__category">
+               <div class="panel__row">
+                  <div class="panel__layer">
+                     <div
+                        id="flat-legend"
+                        class="legend"></div>
+                     <div class="panel__option">
+                        <input
+                           type="checkbox"
+                           id="flat-toggle" />
+                        <label for="flat-toggle">
+                           <span class="panel__swatch"></span>
+                           <span>Flat</span>
+                        </label>
+                     </div>
+                  </div>
+                  <div class="panel__layer">
+                     <div
+                        id="slope-dots-legend"
+                        class="legend"></div>
+                     <div class="panel__option">
+                        <input
+                           type="checkbox"
+                           id="slope-dots-toggle" />
+                        <label for="slope-dots-toggle">
+                           <span class="panel__swatch"></span>
+                           <span>Slope</span>
+                        </label>
+                     </div>
+                  </div>
+                  <div class="panel__layer">
+                     <div
+                        id="sunlight-legend"
+                        class="legend"></div>
+                     <div class="panel__option">
+                        <input
+                           type="checkbox"
+                           id="sunlight-toggle" />
+                        <label for="sunlight-toggle">
+                           <span class="panel__swatch"></span>
+                           <span>Sunlight</span>
+                        </label>
+                     </div>
                   </div>
                </div>
-               <div class="panel__layer">
-                  <div
-                     id="slope-dots-legend"
-                     class="legend"></div>
-                  <div class="panel__option">
-                     <input
-                        type="checkbox"
-                        id="slope-dots-toggle" />
-                     <label for="slope-dots-toggle">
-                        <span class="panel__swatch"></span>
-                        <span>Slope</span>
-                     </label>
-                  </div>
-               </div>
-               <div class="panel__layer">
-                  <div
-                     id="sunlight-legend"
-                     class="legend"></div>
-                  <div class="panel__option">
-                     <input
-                        type="checkbox"
-                        id="sunlight-toggle" />
-                     <label for="sunlight-toggle">
-                        <span class="panel__swatch"></span>
-                        <span>Sunlight</span>
-                     </label>
-                  </div>
-               </div>
-            </div>
-         </section>
-      </aside>
+            </section>
+         </aside>
+      </div>
 
       <button
          type="button"

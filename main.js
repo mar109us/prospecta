@@ -16,6 +16,7 @@ import {
   createToggle,
 } from "./view/layerToggles.js";
 import { buildResourceOptions, colourToggleRow } from "./view/resourcePanel.js";
+import { connectPanelToggle } from "./view/panelToggle.js";
 import { drawFlatLegend, drawSlopeLegend } from "./view/legend.js";
 import { createResourceLayers, resourceToggles } from "./app/resourceLayers.js";
 import { precompileMeshes } from "./view/overlay.js";
@@ -133,6 +134,10 @@ async function main() {
   }
 
   buildResourceOptions("resource-options", RESOURCE_LAYERS);
+  connectPanelToggle({
+    buttonId: "panel-toggle",
+    panelId: "resource-panel",
+  });
   colourToggleRow(FLAT_LAYER.toggleId, SLOPE.flatColour);
   colourToggleRow(SLOPE_DOTS_LAYER.toggleId, SLOPE.colours[SLOPE.colours.length - 1]);
   colourToggleRow(SUNLIGHT.toggleId, SUNLIGHT.colour);

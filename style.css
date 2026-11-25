@@ -2,6 +2,12 @@
   box-sizing: border-box;
 }
 
+/* 1rem follows the window height, so the UI keeps the same share of the
+   screen at any browser zoom or display scaling. */
+html {
+  font-size: max(8px, 1.7vh);
+}
+
 body {
   margin: 0;
   overflow: hidden;
@@ -17,15 +23,26 @@ body {
   display: block;
 }
 
-.logo {
+.sidebar {
   position: absolute;
   z-index: 2;
-  top: 16px;
-  left: 16px;
-  width: 300px;
-  padding: 0 16px;
+  top: 1rem;
+  bottom: 1rem;
+  left: 1rem;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0.5rem;
+  pointer-events: none;
+}
+
+.logo {
+  flex-shrink: 0;
+  width: 18.75rem;
+  padding: 0 1rem;
   line-height: 0;
   user-select: none;
+  pointer-events: auto;
 }
 
 .logo img {
@@ -33,34 +50,44 @@ body {
   height: auto;
 }
 
+.panel-toggle {
+  display: none;
+  padding: 0.375rem 0.625rem;
+  color: white;
+  font-family: system-ui, sans-serif;
+  background: #2f6f3e;
+  border: 1px solid #41ab5d;
+  border-radius: 0.25rem;
+  font-size: 0.8125rem;
+  cursor: pointer;
+  pointer-events: auto;
+}
+
 .panel {
-  position: absolute;
-  z-index: 2;
-  max-height: calc(100vh - 96px);
   overflow-y: auto;
-  top: 80px;
-  left: 16px;
   display: flex;
   flex-direction: column;
-  gap: 32px;
-  width: 300px;
-  padding: 12px 16px;
+  gap: 2rem;
+  width: 18.75rem;
+  padding: 0.75rem 1rem;
   color: white;
   font-family: system-ui, sans-serif;
   background: rgba(20, 20, 20, 0.8);
-  border-radius: 8px;
+  border-radius: 0.5rem;
+  pointer-events: auto;
 }
 
 .panel--terrain {
-  top: auto;
-  bottom: 16px;
-  width: 720px;
+  flex-shrink: 0;
+  width: 45rem;
+  max-width: calc(100vw - 2rem);
+  margin-top: auto;
 }
 
 .panel__row {
   display: flex;
   align-items: flex-end;
-  gap: 24px;
+  gap: 1.5rem;
 }
 
 .panel__row .panel__layer {
@@ -70,7 +97,7 @@ body {
 .panel__layer {
   display: flex;
   flex-direction: column;
-  gap: 4px;
+  gap: 0.25rem;
 }
 
 .panel__layer:not(:has(input:checked)) .legend {
@@ -80,7 +107,7 @@ body {
 .panel__options {
   display: flex;
   flex-direction: column;
-  gap: 4px;
+  gap: 0.25rem;
 }
 
 .panel__option {
@@ -101,12 +128,12 @@ body {
   position: relative;
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: 0.625rem;
   width: 100%;
-  min-height: 44px;
-  padding: 0 12px 0 16px;
+  min-height: 2.75rem;
+  padding: 0 0.75rem 0 1rem;
   overflow: hidden;
-  border-radius: 8px;
+  border-radius: 0.5rem;
   cursor: pointer;
   user-select: none;
 }
@@ -131,7 +158,7 @@ body {
   top: 0;
   bottom: 0;
   left: 0;
-  width: 3px;
+  width: 0.1875rem;
   background: var(--layer-colour);
 }
 
@@ -142,9 +169,9 @@ body {
 
 .panel__swatch {
   flex-shrink: 0;
-  width: 14px;
-  height: 14px;
-  border-radius: 3px;
+  width: 0.875rem;
+  height: 0.875rem;
+  border-radius: 0.1875rem;
   background: var(--layer-colour);
   opacity: 0.35;
 }
@@ -154,7 +181,7 @@ body {
 }
 
 .panel__error {
-  max-width: 280px;
+  max-width: 17.5rem;
   margin: 0;
   color: #ff8a80;
 }
@@ -162,18 +189,18 @@ body {
 .panel__search {
   display: flex;
   flex-direction: column;
-  gap: 6px;
-  margin-bottom: 8px;
-  max-width: 300px;
+  gap: 0.375rem;
+  margin-bottom: 0.5rem;
+  max-width: 18.75rem;
 }
 
 .panel__button {
-  padding: 6px 10px;
+  padding: 0.375rem 0.625rem;
   color: white;
   font: inherit;
   background: #2f6f3e;
   border: 1px solid #41ab5d;
-  border-radius: 4px;
+  border-radius: 0.25rem;
   cursor: pointer;
 }
 
@@ -183,25 +210,25 @@ body {
 
 .panel__status {
   margin: 0;
-  font-size: 13px;
+  font-size: 0.8125rem;
 }
 
 .results {
   position: absolute;
   z-index: 2;
-  top: 16px;
-  right: 16px;
+  top: 1rem;
+  right: 1rem;
   display: flex;
   flex-direction: column;
-  gap: 8px;
-  width: 260px;
-  max-height: calc(100vh - 32px);
-  padding: 12px;
+  gap: 0.5rem;
+  width: 16.25rem;
+  max-height: calc(100vh - 4.5rem);
+  padding: 0.75rem;
   overflow-y: auto;
   color: white;
   font-family: system-ui, sans-serif;
   background: rgba(20, 20, 20, 0.8);
-  border-radius: 8px;
+  border-radius: 0.5rem;
 }
 
 .results[hidden] {
@@ -211,36 +238,36 @@ body {
 .results__cards {
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: 0.5rem;
 }
 
 .result-card {
   position: relative;
   display: flex;
   flex-direction: column;
-  gap: 2px;
-  padding: 8px 10px;
+  gap: 0.125rem;
+  padding: 0.5rem 0.625rem;
   color: white;
   font: inherit;
-  font-size: 13px;
+  font-size: 0.8125rem;
   text-align: left;
   background: color-mix(in srgb, var(--rank-colour) 14%, transparent);
   border: 1px solid color-mix(in srgb, var(--rank-colour) 45%, #555);
-  border-radius: 6px;
+  border-radius: 0.375rem;
   cursor: pointer;
 }
 
 .result-card__badge {
   position: absolute;
-  top: 8px;
-  right: 8px;
+  top: 0.5rem;
+  right: 0.5rem;
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 26px;
-  height: 26px;
+  width: 1.625rem;
+  height: 1.625rem;
   color: black;
-  font-size: 15px;
+  font-size: 0.9375rem;
   font-weight: bold;
   background: white;
   border-radius: 50%;
@@ -251,7 +278,7 @@ body {
 }
 
 .result-card__rank {
-  font-size: 18px;
+  font-size: 1.125rem;
   font-weight: bold;
 }
 
@@ -264,14 +291,14 @@ body {
 }
 
 .panel__divider {
-  height: 4px;
+  height: 0.25rem;
 }
 
 .legend {
   display: flex;
   align-items: center;
-  gap: 2px;
-  margin: 0 0 4px 40px;
+  gap: 0.125rem;
+  margin: 0 0 0.25rem 2.5rem;
   user-select: none;
 }
 
@@ -280,21 +307,21 @@ body {
 }
 
 .legend__swatch {
-  width: 14px;
-  height: 10px;
+  width: 0.875rem;
+  height: 0.625rem;
   border: 1px solid #666;
 }
 
 .legend__dot {
-  width: 9px;
-  height: 9px;
+  width: 0.5625rem;
+  height: 0.5625rem;
   border-radius: 50%;
 }
 
 .legend__label {
-  margin-left: 6px;
+  margin-left: 0.375rem;
   color: #bbb;
-  font-size: 11px;
+  font-size: 0.6875rem;
 }
 
 .route-labels {
@@ -309,39 +336,40 @@ body {
   position: absolute;
   top: 0;
   left: 0;
-  padding: 2px 6px;
+  padding: 0.125rem 0.375rem;
   color: white;
   font-family: system-ui, sans-serif;
-  font-size: 12px;
+  font-size: 0.75rem;
   white-space: nowrap;
   background: rgba(20, 20, 20, 0.8);
   border-left: 3px solid white;
-  border-radius: 3px;
+  border-radius: 0.1875rem;
 }
 
 .panel__clear {
   width: 100%;
-  margin-top: 32px;
-  padding: 6px 10px;
+  margin-top: 2rem;
+  padding: 0.375rem 0.625rem;
   color: #ddd;
   font: inherit;
   background: none;
   border: 1px solid #555;
-  border-radius: 4px;
+  border-radius: 0.25rem;
   cursor: pointer;
 }
 
 .walk-button {
   position: absolute;
   z-index: 2;
-  right: 16px;
-  bottom: 16px;
-  padding: 6px 10px;
+  right: 1rem;
+  bottom: 1rem;
+  padding: 0.375rem 0.625rem;
   color: white;
   font-family: system-ui, sans-serif;
   background: #2f6f3e;
   border: 1px solid #41ab5d;
-  border-radius: 4px;
+  border-radius: 0.25rem;
+  font-size: 0.8125rem;
   cursor: pointer;
 }
 
@@ -353,30 +381,81 @@ body {
 .debug-hud {
   position: absolute;
   z-index: 2;
-  right: 16px;
-  bottom: 56px;
+  right: 1rem;
+  bottom: 3.5rem;
   margin: 0;
-  padding: 8px 10px;
+  padding: 0.5rem 0.625rem;
   color: white;
   font-family: ui-monospace, monospace;
-  font-size: 12px;
+  font-size: 0.75rem;
   background: rgba(0, 0, 0, 0.6);
-  border-radius: 4px;
+  border-radius: 0.25rem;
   pointer-events: none;
 }
 
 .debug-craters {
   position: absolute;
   z-index: 2;
-  right: 90px;
-  bottom: 16px;
+  right: 5.625rem;
+  bottom: 1rem;
   display: flex;
   align-items: center;
-  gap: 6px;
-  padding: 4px 8px;
+  gap: 0.375rem;
+  padding: 0.25rem 0.5rem;
   color: white;
   font-family: system-ui, sans-serif;
-  font-size: 13px;
+  font-size: 0.8125rem;
   background: rgba(0, 0, 0, 0.6);
-  border-radius: 4px;
+  border-radius: 0.25rem;
+}
+
+@media (max-width: 800px) {
+  .sidebar {
+    right: 1rem;
+  }
+
+  .logo {
+    width: 11.25rem;
+  }
+
+  .panel-toggle {
+    display: block;
+  }
+
+  .panel--resources {
+    display: none;
+    max-width: 100%;
+  }
+
+  .panel--resources.panel--open {
+    display: flex;
+  }
+
+  .panel--terrain {
+    width: 100%;
+  }
+
+  .panel__row {
+    gap: 0.5rem;
+  }
+
+  .legend {
+    margin-left: 0;
+  }
+
+  .walk-button {
+    top: 1rem;
+    bottom: auto;
+  }
+
+  .results {
+    top: 3.5rem;
+    width: min(16.25rem, calc(100vw - 2rem));
+    max-height: calc(100vh - 11rem);
+  }
+
+  .debug-hud,
+  .debug-craters {
+    display: none;
+  }
 }
