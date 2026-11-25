@@ -20,6 +20,10 @@ export function metresToScene(metres) {
   return metres / MOON_RADIUS_METRES;
 }
 
+export function sceneToMetres(distance) {
+  return distance * MOON_RADIUS_METRES;
+}
+
 export function walkSpeed(keys, settings) {
   if (keys.sprint) return settings.walkSpeedMetresPerSecond * settings.sprintMultiplier;
   return settings.walkSpeedMetresPerSecond;
@@ -81,7 +85,7 @@ export function lookDirection(walker, pitchDegrees) {
   };
 }
 
-function northOf(up) {
+export function northOf(up) {
   return flattenOnto(WORLD_UP, up);
 }
 

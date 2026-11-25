@@ -4,6 +4,7 @@ import { lookRotation, toVector3, viewFromBase } from "./cameraView.js";
 import { flattenOnto, normalize } from "./spotOrbit.js";
 import { scenePositionToLatLon } from "./terrainMath.js";
 import { updateGround } from "./firstPersonGround.js";
+import { hideGroundPatch, updateGroundPatch } from "./groundPatch.js";
 import { headingDegrees, lookDirection, metresToScene, walk, walkSpeed } from "./firstPersonMath.js";
 import { connectFirstPersonInput } from "./firstPersonInput.js";
 
@@ -120,6 +121,7 @@ function exitFirstPerson(globe) {
   globe.spotFocus = null;
   globe.controls.enabled = true;
   if (document.pointerLockElement) document.exitPointerLock();
+  hideGroundPatch(globe);
   setButtonLabel("walk");
   logWalker(globe.firstPerson);
 }
@@ -144,6 +146,7 @@ export function updateFirstPerson(globe) {
   walker.up = moved.up;
   walker.forward = moved.forward;
   updateGround(globe, walker);
+  updateGroundPatch(globe, walker);
   placeCamera(globe.camera, walker);
 }
 

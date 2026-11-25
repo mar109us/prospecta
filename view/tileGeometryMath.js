@@ -89,7 +89,7 @@ function fillVertices(build, arrays) {
   }
 }
 
-function fillIndices(segments, indices) {
+export function fillIndices(segments, indices) {
   const corners = segments + 1;
   let next = 0;
   for (let row = 0; row < segments; row++) {

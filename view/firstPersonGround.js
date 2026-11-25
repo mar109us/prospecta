@@ -1,5 +1,7 @@
-import { MOON } from "../settings.js";
+import { GROUND_DETAIL, MOON } from "../settings.js";
+import { metresToScene } from "./firstPersonMath.js";
 import { tileContains, tileSurfaceRadius } from "./groundMath.js";
+import { noiseAt } from "./groundPatchMath.js";
 import {
   elevationToRadius,
   radiusToElevation,
@@ -25,15 +27,19 @@ function coarseRadius(grid, latLon) {
   return elevationToRadius(km, MOON.heightExaggeration);
 }
 
+export function surfaceRadiusAt(globe, grid, latLon) {
+  const radius = detailRadius(globe.detail, latLon);
+  if (radius !== null) return radius;
+  return coarseRadius(grid, latLon);
+}
+
 export function updateGround(globe, walker) {
   const latLon = scenePositionToLatLon(walker.up.x, walker.up.y, walker.up.z);
-  const radius = detailRadius(globe.detail, latLon);
-  if (radius === null) {
-    walker.groundSource = "coarse";
-    walker.groundRadius = coarseRadius(walker.grid, latLon);
-  } else {
-    walker.groundSource = "detail";
-    walker.groundRadius = radius;
-  }
-  walker.groundKm = radiusToElevation(walker.groundRadius, MOON.heightExaggeration);
+  walker.groundSource = "coarse";
+  if (detailRadius(globe.detail, latLon) !== null) walker.groundSource = "detail";
+
+  let radius = surfaceRadiusAt(globe, walker.grid, latLon);
+  if (GROUND_DETAIL.isEnabled) radius += metresToScene(noiseAt(walker.up, GROUND_DETAIL.octaves));
+  walker.groundRadius = radius;
+  walker.groundKm = radiusToElevation(radius, MOON.heightExaggeration);
 }

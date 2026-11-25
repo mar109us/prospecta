@@ -26,6 +26,7 @@ export function connectDebug(globe) {
 export function connectLayerDebug(layer, grid) {
   logDataset(grid);
   const checkbox = document.getElementById(layer.toggleId);
+  if (!checkbox) return;
   checkbox.addEventListener("change", () => {
     console.log(`${layer.datasetName} layer visible:`, checkbox.checked);
   });

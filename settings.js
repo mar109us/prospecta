@@ -36,6 +36,39 @@ export const FIRST_PERSON = {
   sprintMultiplier: 50,
 };
 
+export const GROUND_DETAIL = {
+  isEnabled: true,
+  patchMetres: 1000,
+  patchSegments: 256,
+  rebuildMetres: 100,
+  rebuildToleranceMetres: 1,
+  fadeStart: 0.6,
+  fadeEnd: 0.95,
+  octaves: [
+    {
+      wavelengthMetres: 400,
+      amplitudeMetres: 8,
+    },
+    {
+      wavelengthMetres: 100,
+      amplitudeMetres: 2,
+    },
+    {
+      wavelengthMetres: 30,
+      amplitudeMetres: 0.6,
+    },
+    {
+      wavelengthMetres: 10,
+      amplitudeMetres: 0.2,
+    },
+  ],
+  grainTileMetres: 4,
+  grainTextureSize: 256,
+  grainPeriods: [4, 8, 16, 32],
+  grainAnchorKm: 50,
+  bumpScale: 2,
+};
+
 export const CRATERS = {
   approachKm: 20,
   list: [
